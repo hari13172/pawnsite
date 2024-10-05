@@ -82,29 +82,6 @@ const Profile: React.FC = () => {
                     </tr>
                 </tbody>
             </table>
-
-            {/* Display Payment Log if available */}
-            {customerData.payments && customerData.payments.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-2xl font-bold mb-4">Payment History</h3>
-                    <table className="min-w-full bg-white border">
-                        <thead>
-                            <tr>
-                                <th className="border p-2">Payment Date</th>
-                                <th className="border p-2">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {customerData.payments.map((payment, index) => (
-                                <tr key={index} className="text-center">
-                                    <td className="border p-2">{new Date(payment.date).toLocaleDateString()}</td>
-                                    <td className="border p-2">{payment.amount}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
         </div>
     );
 };

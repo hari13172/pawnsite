@@ -20,7 +20,7 @@ interface FormData {
     StaringDate: string;
     EndingDate: string;
     note: string;
-    images: File[];
+    images: string[];
     status: 'pending' | 'completed';
     payments: Payment[];
 }
@@ -105,16 +105,16 @@ const CustomerPage: React.FC = () => {
                 // Auto-fill the form with the existing customer's data excluding amount and pending amount
                 setFormData(prevFormData => ({
                     ...prevFormData,
-                    applicationNumber: existingCustomer.applicationNumber,
+                    // applicationNumber: existingCustomer.applicationNumber,
                     username: existingCustomer.username,
                     address: existingCustomer.address,
                     phonenumber: existingCustomer.phonenumber,
-                    ItemWeight: existingCustomer.ItemWeight,
-                    StaringDate: existingCustomer.StaringDate,
-                    EndingDate: existingCustomer.EndingDate,
-                    note: existingCustomer.note,
-                    images: existingCustomer.images,
-                    status: existingCustomer.status,
+                    // ItemWeight: existingCustomer.ItemWeight,
+                    // StaringDate: existingCustomer.StaringDate,
+                    // EndingDate: existingCustomer.EndingDate,
+                    // note: existingCustomer.note,
+                    // images: existingCustomer.images,
+                    // status: existingCustomer.status,
                     payments: []
                 }));
                 return;
@@ -416,7 +416,9 @@ const CustomerPage: React.FC = () => {
                         {formData.images.length > 0 && (
                             <div className="mt-2">
                                 {formData.images.map((image, idx) => (
-                                    <div key={idx}>{image.name}</div>
+                                    <div key={idx}>
+                                        <img src={image} alt={`Uploaded image ${idx + 1}`} className="h-12 w-12 object-cover rounded" />
+                                    </div>
                                 ))}
                             </div>
                         )}

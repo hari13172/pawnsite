@@ -65,12 +65,12 @@ export default function CustomerFormWithTable() {
   };
 
   // Toggle status function
-  const handleStatusChange = (index: number) => {
+  const handleStatusChange = (index: number, newstatus: 'pending' | 'completed') => {
     const updatedCustomers = customers.map((customer, i) => {
       if (i === index) {
         return {
           ...customer,
-          status: customer.status === 'pending' ? 'completed' : 'pending',
+          status: newstatus,
         };
       }
       return customer;
@@ -145,7 +145,13 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.PendingAmount}</td>
                 <td className="border p-2">{customer.StaringDate}</td>
                 <td className="border p-2">{customer.EndingDate}</td>
-                <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td>
+                {/* <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td> */}
+                <td className='border-2'>
+                  <select className="border p-2 rounded" value={customer.status} onChange={(e) => handleStatusChange(index, e.target.value as 'pending' | 'completed')} >
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </td>
                 <td className="border p-2 space-x-2">
                   <div className='flex gap-4'>
                     <button onClick={() => handleEdit(customer)} className="bg-blue-500 text-white p-2 rounded">
@@ -154,9 +160,9 @@ export default function CustomerFormWithTable() {
                     <button onClick={() => handleDelete(index)} className="bg-red-500 text-white p-2 rounded">
                       <RiDeleteBin5Fill />
                     </button>
-                    <button onClick={() => handleStatusChange(index)} className="bg-green-500 text-white p-2 rounded">
-                      {customer.status === 'pending' ? 'Mark Completed' : 'Mark Pending'}
-                    </button>
+                    {/* <button onClick={() => handleStatusChange(index)} className="bg-green-500 text-white p-2 rounded">
+                      {customer.status === 'pending' ? <IoCheckmarkDoneSharp /> : <MdPendingActions />}
+                    </button> */}
                   </div>
                 </td>
                 <td className="border p-2">{customer.note}</td>

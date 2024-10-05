@@ -20,6 +20,8 @@ export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
     const [filteredCustomers, setFilteredCustomers] = useState<FormData[]>([]);
     const [searchPhone, setSearchPhone] = useState<string>('');
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
 
     // Load customers from local storage when the component mounts
     useEffect(() => {
@@ -43,6 +45,15 @@ export default function Report() {
             );
             setFilteredCustomers(filtered);
         }
+    };
+
+    // Handle image click to show in modal
+    const handleImageClick = (image: string) => {
+        setSelectedImage(image); // Set the clicked image as the selected image
+    };
+
+    const closeModal = () => {
+        setSelectedImage(null); // Close the modal by resetting the selected image
     };
 
     // Function to download the data as CSV
@@ -162,6 +173,7 @@ export default function Report() {
                                         <img
                                             src={customer.images[0]}
                                             alt="Uploaded"
+                                            onClick={() => handleImageClick(customer.images[0])}
                                             className="h-12 w-12 object-cover rounded cursor-pointer"
                                         />
                                     ) : (
@@ -177,6 +189,23 @@ export default function Report() {
                     )}
                 </tbody>
             </table>
+            {selectedImage && <ImageModal image={selectedImage} onClose={closeModal} />}
         </div>
     );
 }
+
+
+
+// Modal Component for Image Preview
+const ImageModal = ({ image, onClose }: { image: string; onClose: () => void }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl max-h-screen">
+                <img src={image} alt="Preview" className="max-w-full max-h-screen object-contain" />
+                <button onClick={onClose} className="mt-4 bg-red-500 text-white p-2 rounded">
+                    Close
+                </button>
+            </div>
+        </div>
+    );
+};
