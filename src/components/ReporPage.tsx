@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-
 interface FormData {
     applicationNumber: string;
     username: string;
@@ -13,6 +12,7 @@ interface FormData {
     StaringDate: string;
     EndingDate: string;
     note: string;
+    images: string[]; // Images as URLs or base64 strings
     status: 'pending' | 'completed';
 }
 
@@ -58,7 +58,8 @@ export default function Report() {
             "Starting Date",
             "Ending Date",
             "Status",
-            "Notes"
+            "Notes",
+            "Images"
         ];
 
         const rows = filteredCustomers.map(customer => [
@@ -72,12 +73,13 @@ export default function Report() {
             customer.StaringDate,
             customer.EndingDate,
             customer.status,
-            customer.note
+            customer.note,
+            customer.images.join('|') // Joining image URLs or base64 strings with '|'
         ]);
 
         const csvContent = [
             headers.join(','),
-            ...rows.map(row => row.join(','))
+            ...rows.map(row => row.map(item => `"${item}"`).join(',')) // Wrap each item with quotes
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -129,6 +131,7 @@ export default function Report() {
                         <th className="border p-2">Ending Date</th>
                         <th className="border p-2">Status</th>
                         <th className="border p-2">Notes</th>
+                        <th className="border p-2">Image</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,6 +157,17 @@ export default function Report() {
                                 <td className="border p-2">{customer.EndingDate}</td>
                                 <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td>
                                 <td className="border p-2">{customer.note}</td>
+                                <td className="border p-2">
+                                    {customer.images && customer.images.length > 0 ? (
+                                        <img
+                                            src={customer.images[0]}
+                                            alt="Uploaded"
+                                            className="h-12 w-12 object-cover rounded cursor-pointer"
+                                        />
+                                    ) : (
+                                        'No Image'
+                                    )}
+                                </td>
                             </tr>
                         ))
                     ) : (
