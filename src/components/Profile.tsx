@@ -1,12 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
-interface Payment {
-    date: string;
-    amount: string;
-}
-
-interface FormData {
+interface Customer {
     applicationNumber: string;
     username: string;
     address: string;
@@ -14,41 +9,46 @@ interface FormData {
     ItemWeight: string;
     amount: string;
     PendingAmount: string;
-    CurrentAmount: string;
     StaringDate: string;
     EndingDate: string;
     note: string;
     status: 'pending' | 'completed';
-    payments?: Payment[];
+    images: string[];
 }
 
 const Profile: React.FC = () => {
     const location = useLocation();
-    const customerData = location.state as FormData;
 
-    if (!customerData) {
+    // Ensure that location.state and location.state.customers are defined
+    const customers = location.state?.customers as Customer[] | undefined;
+
+    if (!customers || customers.length === 0) {
         return <div>No customer data available.</div>;
     }
+
+    const firstCustomer = customers[0];
+
+    // Default logo URL in case no profile image is provided
+    const defaultLogo = "https://via.placeholder.com/150"; // Replace this with your default logo URL if you have one
 
     return (
         <div className="p-6">
             <h2 className="text-3xl font-bold mb-6">Customer Profile</h2>
 
             <div className="flex items-center mb-6">
-                {/* Profile Image */}
+                {/* Profile Image or Default Logo */}
                 <img
-                    src={`https://via.placeholder.com/150`} // Placeholder image
+                    src={firstCustomer.images && firstCustomer.images.length > 0 ? firstCustomer.images[0] : defaultLogo}
                     alt="Profile"
                     className="rounded-full h-24 w-24 mr-4"
                 />
                 <div>
-                    <h3 className="text-xl font-bold">{customerData.username}</h3>
-                    <p className="text-gray-600">{customerData.address}</p>
-                    <p className="text-gray-600">{customerData.phonenumber}</p>
+                    <h3 className="text-xl font-bold">{firstCustomer.username}</h3>
+                    <p className="text-gray-600">{firstCustomer.address}</p>
+                    <p className="text-gray-600">{firstCustomer.phonenumber}</p>
                 </div>
             </div>
 
-            {/* Customer Data Table */}
             <h3 className="text-2xl font-bold mb-4">Customer Details</h3>
             <table className="min-w-full bg-white border">
                 <thead>
@@ -67,19 +67,21 @@ const Profile: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr className="text-center">
-                        <td className="border p-2">{customerData.applicationNumber}</td>
-                        <td className="border p-2">{customerData.username}</td>
-                        <td className="border p-2">{customerData.address}</td>
-                        <td className="border p-2">{customerData.phonenumber}</td>
-                        <td className="border p-2">{customerData.ItemWeight}</td>
-                        <td className="border p-2">{customerData.amount}</td>
-                        <td className="border p-2">{customerData.PendingAmount}</td>
-                        <td className="border p-2">{customerData.StaringDate}</td>
-                        <td className="border p-2">{customerData.EndingDate}</td>
-                        <td className="border p-2">{customerData.status === 'pending' ? 'Pending' : 'Completed'}</td>
-                        <td className="border p-2">{customerData.note}</td>
-                    </tr>
+                    {customers.map((customer, index) => (
+                        <tr key={index} className="text-center">
+                            <td className="border p-2">{customer.applicationNumber}</td>
+                            <td className="border p-2">{customer.username}</td>
+                            <td className="border p-2">{customer.address}</td>
+                            <td className="border p-2">{customer.phonenumber}</td>
+                            <td className="border p-2">{customer.ItemWeight}</td>
+                            <td className="border p-2">{customer.amount}</td>
+                            <td className="border p-2">{customer.PendingAmount}</td>
+                            <td className="border p-2">{customer.StaringDate}</td>
+                            <td className="border p-2">{customer.EndingDate}</td>
+                            <td className="border p-2">{customer.status}</td>
+                            <td className="border p-2">{customer.note}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>

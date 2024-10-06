@@ -236,6 +236,20 @@ const CustomerPage: React.FC = () => {
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (validate()) {
+
+            const totalPaid = formData.payments.reduce((acc, payment) => acc + parseFloat(payment.amount), 0);
+            const currentAmountValue = parseFloat(formData.CurrentAmount) || 0;
+            const totalAmount = parseFloat(formData.amount) || 0;
+
+            // Check if adding the current amount exceeds the total amount
+            if (totalPaid + currentAmountValue > totalAmount) {
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    CurrentAmount: "Current amount exceeds the remaining balance."
+                }));
+                return;
+            }
+
             const storedCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
 
             const newPayment: Payment = {
@@ -359,6 +373,7 @@ const CustomerPage: React.FC = () => {
                     <div>
                         <label className='block'>Current amount</label>
                         <input
+                            placeholder='0'
                             type="number"
                             name='CurrentAmount'
                             value={formData.CurrentAmount}

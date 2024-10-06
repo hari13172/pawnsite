@@ -55,6 +55,13 @@ export default function CustomerFormWithTable() {
     navigate('/addcustomer', { state: { customerData: customer } });
   };
 
+
+
+  const handleViewProfile = (phonenumber: string) => {
+    const customersWithSamePhone = customers.filter(customer => customer.phonenumber === phonenumber);
+    navigate('/profiles', { state: { customers: customersWithSamePhone } });
+  };
+
   // Delete customer function
   const handleDelete = (index: number) => {
     const newCustomers = [...customers];
@@ -127,15 +134,18 @@ export default function CustomerFormWithTable() {
         </thead>
         <tbody>
           {filteredCustomers.length > 0 ? (
-            filteredCustomers.map((customer, index) => (
+            filteredCustomers.slice().reverse().map((customer, index) => (
               <tr key={index} className="text-center">
                 <td className="border p-2">
                   <Link to="/profile" state={customer} className="text-blue-500 hover:underline">{customer.applicationNumber}</Link>
                 </td>
                 <td className="border p-2">
-                  <Link to="/profiles" state={customer} className="text-blue-500 hover:underline">
+                  <button
+                    onClick={() => handleViewProfile(customer.phonenumber)}
+                    className="text-blue-500 hover:underline"
+                  >
                     {customer.username}
-                  </Link>
+                  </button>
                 </td>
                 {/* Other customer details */}
                 <td className="border p-2">{customer.address}</td>
