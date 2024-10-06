@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface Customer {
     applicationNumber: string;
@@ -69,7 +69,11 @@ const Profile: React.FC = () => {
                 <tbody>
                     {customers.map((customer, index) => (
                         <tr key={index} className="text-center">
-                            <td className="border p-2">{customer.applicationNumber}</td>
+                            <td className="border p-2">
+                                <Link to="/profile" state={customer} className="text-blue-500 hover:underline">
+                                    {customer.applicationNumber}
+                                </Link>
+                            </td>
                             <td className="border p-2">{customer.username}</td>
                             <td className="border p-2">{customer.address}</td>
                             <td className="border p-2">{customer.phonenumber}</td>

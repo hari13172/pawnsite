@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
     return (
@@ -10,26 +10,45 @@ const Sidebar: React.FC = () => {
                 <div className='p-4 text-2xl font-bold'>Pawmshop Admin</div>
 
                 <ul className='space-y-2 mt-4 p-4'>
-                    {/* {['Dashboard', 'Transaction', 'customer', 'Loans', 'Reports'].map((menu, idx) => (
-                        <li key={idx} className='hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200'>
-                            {menu}
-                        </li>
-                    ))} */}
-
                     <li className="hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200">
-                        <Link to="/">Dashboard</Link>
+                        <NavLink
+                            to="/"
+                            className={({ isActive }) =>
+                                isActive ? 'bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200' : 'hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200'
+                            }
+                        >
+                            Dashboard
+                        </NavLink>
                     </li>
                     <li className="hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200">
-                        <Link to="/transactions">Transaction</Link>
+                        <NavLink
+                            to="/addcustomer"
+                            className={({ isActive }) =>
+                                isActive ? 'bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200' : 'hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200'
+                            }
+                        >
+                            Add Customer
+                        </NavLink>
                     </li>
                     <li className="hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200">
-                        <Link to="/addcustomer">Add Customer</Link>
+                        <NavLink
+                            to="/customers"
+                            className={({ isActive }) =>
+                                isActive ? 'bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200' : 'hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200'
+                            }
+                        >
+                            Customers
+                        </NavLink>
                     </li>
                     <li className="hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200">
-                        <Link to="/customers">Customers</Link>
-                    </li>
-                    <li className="hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200">
-                        <Link to="/reports">Reports</Link>
+                        <NavLink
+                            to="/reports"
+                            className={({ isActive }) =>
+                                isActive ? 'bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200' : 'hover:bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200'
+                            }
+                        >
+                            Reports
+                        </NavLink>
                     </li>
                 </ul>
 
