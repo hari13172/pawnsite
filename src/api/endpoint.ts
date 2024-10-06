@@ -1,0 +1,1 @@
+export const FORM_URL = "http://172.20.0.26:8000/add_customers"

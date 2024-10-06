@@ -1,58 +1,60 @@
 import React, { useEffect, useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { axiosInstance } from '../api/axiosConfig';
+import { FORM_URL } from '../api/endpoint';
 
 // Types for data
 interface Payment {
     date: string;
-    amount: string;
+    amount: number;
 }
 
 interface FormData {
-    applicationNumber: string;
+    app_no: number;
     username: string;
     address: string;
-    phonenumber: string;
-    ItemWeight: string;
-    amount: string;
-    PendingAmount: string;
-    CurrentAmount: string;
-    StaringDate: string;
-    EndingDate: string;
+    ph_no: number;
+    item_weight: number;
+    amount: number;
+    pending: number;
+    current_amount: number;
+    start_date: string;
+    end_date: string;
     note: string;
-    images: string[];
+    image: File[];  // Changed to File[] to store the file objects
     status: 'pending' | 'completed';
     payments: Payment[];
 }
 
 interface FormErrors {
-    applicationNumber?: string;
+    app_no?: string;
     username?: string;
     address?: string;
-    phonenumber?: string;
-    ItemWeight?: string;
+    ph_no?: string;
+    item_weight?: string;
     amount?: string;
-    PendingAmount?: string;
-    CurrentAmount?: string;
-    StaringDate?: string;
-    EndingDate?: string;
+    pending?: string;
+    current_amount?: string;
+    start_date?: string;
+    end_date?: string;
     note?: string;
 }
 
 const CustomerPage: React.FC = () => {
     const [formData, setFormData] = useState<FormData>({
-        applicationNumber: "",
+        app_no: 0,
         username: "",
         address: "",
-        phonenumber: "",
-        ItemWeight: "",
-        amount: "",
-        PendingAmount: "",
-        CurrentAmount: "",
-        StaringDate: "",
-        EndingDate: "",
+        ph_no: 0,
+        item_weight: 0,
+        amount: 0,
+        pending: 0,
+        current_amount: 0,
+        start_date: "",
+        end_date: "",
         note: "",
-        images: [],
+        image: [],
         status: 'pending',
         payments: []
     });
@@ -63,18 +65,18 @@ const CustomerPage: React.FC = () => {
 
     const handleReset = () => {
         setFormData({
-            applicationNumber: "",
+            app_no: 0,
             username: "",
             address: "",
-            phonenumber: "",
-            ItemWeight: "",
-            amount: "",
-            PendingAmount: "",
-            CurrentAmount: "",
-            StaringDate: "",
-            EndingDate: "",
+            ph_no: 0,
+            item_weight: 0,
+            amount: 0,
+            pending: 0,
+            current_amount: 0,
+            start_date: "",
+            end_date: "",
             note: "",
-            images: [],
+            image: [],
             status: 'pending',
             payments: []
         });
@@ -94,43 +96,16 @@ const CustomerPage: React.FC = () => {
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
-        if (name === 'phonenumber') {
-            // Check if the phone number already exists in stored customers
-            const storedCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
-            const existingCustomer = storedCustomers.find(
-                (customer: FormData) => customer.phonenumber === value
-            );
-
-            if (existingCustomer) {
-                // Auto-fill the form with the existing customer's data excluding amount and pending amount
-                setFormData(prevFormData => ({
-                    ...prevFormData,
-                    // applicationNumber: existingCustomer.applicationNumber,
-                    username: existingCustomer.username,
-                    address: existingCustomer.address,
-                    phonenumber: existingCustomer.phonenumber,
-                    // ItemWeight: existingCustomer.ItemWeight,
-                    // StaringDate: existingCustomer.StaringDate,
-                    // EndingDate: existingCustomer.EndingDate,
-                    // note: existingCustomer.note,
-                    // images: existingCustomer.images,
-                    // status: existingCustomer.status,
-                    payments: []
-                }));
-                return;
-            }
-        }
-
         setFormData((prevFormData) => {
             let updatedFormData = { ...prevFormData, [name]: value };
 
-            if (name === "CurrentAmount" || name === "amount") {
-                const amountValue = parseFloat(updatedFormData.amount) || 0;
-                const totalPaid = prevFormData.payments.reduce((acc, payment) => acc + parseFloat(payment.amount), 0);
-                const currentAmountValue = parseFloat(updatedFormData.CurrentAmount) || 0;
-                const pendingAmount = (amountValue - totalPaid - currentAmountValue).toFixed(2);
+            if (name === "current_amount" || name === "amount") {
+                const amountValue = parseFloat(updatedFormData.amount as any) || 0;
+                const totalPaid = prevFormData.payments.reduce((acc, payment) => acc + parseFloat(payment.amount as any), 0);
+                const current_amountValue = parseFloat(updatedFormData.current_amount as any) || 0;
+                const pending = parseInt((amountValue - totalPaid - current_amountValue).toFixed(2));
 
-                updatedFormData = { ...updatedFormData, PendingAmount: pendingAmount };
+                updatedFormData = { ...updatedFormData, pending };
             }
 
             return updatedFormData;
@@ -140,20 +115,11 @@ const CustomerPage: React.FC = () => {
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            const imageReaders = files.map(file => {
-                return new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            });
 
-            Promise.all(imageReaders).then(imageDataUrls => {
-                setFormData({
-                    ...formData,
-                    images: imageDataUrls,  // Store base64 encoded images
-                });
+            // Store the file(s) directly in formData
+            setFormData({
+                ...formData,
+                image: files  // Store file object(s) directly
             });
         }
     };
@@ -164,138 +130,80 @@ const CustomerPage: React.FC = () => {
         const weightRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
         const amountRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
-        if (!formData.applicationNumber) tempErrors.applicationNumber = "Application number is required";
+        if (!formData.app_no) tempErrors.app_no = "Application number is required";
         if (!formData.username) tempErrors.username = "Username is required";
         if (!formData.address) tempErrors.address = "Address is required";
-        if (!phoneRegex.test(formData.phonenumber)) tempErrors.phonenumber = "Phone number must be 10 digits";
-        if (!weightRegex.test(formData.ItemWeight)) tempErrors.ItemWeight = "Weight should be a valid number";
-        if (!amountRegex.test(formData.amount)) tempErrors.amount = "Amount should be a valid number";
-        if (!amountRegex.test(formData.PendingAmount)) tempErrors.PendingAmount = "Pending amount should be a valid number";
-        if (!amountRegex.test(formData.CurrentAmount)) tempErrors.CurrentAmount = "Current amount should be a valid number";
-        if (!formData.StaringDate) tempErrors.StaringDate = "Starting Date is required";
-        if (!formData.EndingDate) tempErrors.EndingDate = "Ending Date is required";
-
-        const storedCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
-        const existingCustomer = storedCustomers.find(
-            (customer: FormData) => customer.applicationNumber === formData.applicationNumber
-        );
-
-        if (existingCustomer && location.state?.customerData?.applicationNumber !== formData.applicationNumber) {
-            tempErrors.applicationNumber = "Application number already used";
-        }
+        if (!phoneRegex.test(String(formData.ph_no))) tempErrors.ph_no = "Phone number must be 10 digits";
+        if (!weightRegex.test(String(formData.item_weight))) tempErrors.item_weight = "Weight should be a valid number";
+        if (!amountRegex.test(String(formData.amount))) tempErrors.amount = "Amount should be a valid number";
+        if (!amountRegex.test(String(formData.pending))) tempErrors.pending = "Pending amount should be a valid number";
+        if (!amountRegex.test(String(formData.current_amount))) tempErrors.current_amount = "Current amount should be a valid number";
+        if (!formData.start_date) tempErrors.start_date = "Starting Date is required";
+        if (!formData.end_date) tempErrors.end_date = "Ending Date is required";
 
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
 
-    // const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    //     e.preventDefault();
-    //     if (validate()) {
-    //         const storedCustomers = JSON.parse(localStorage.getItem('customers') || '{}');
-
-    //         // Group by phone number
-    //         const customerGroup = storedCustomers[formData.phonenumber] || [];
-
-
-    //         const newPayment: Payment = {
-    //             date: new Date().toISOString(),
-    //             amount: formData.CurrentAmount,
-    //         };
-
-    //         const updatedFormData = {
-    //             ...formData,
-    //             payments: [...formData.payments, newPayment],
-    //             PendingAmount: formData.amount, // Start fresh pending amount
-    //             CurrentAmount: "", // Clear the CurrentAmount for the next entry
-    //         };
-
-
-
-
-    //         // Store each entry separately, even if the phone number matches
-    //         if (storedCustomers[formData.phonenumber]) {
-    //             storedCustomers[formData.phonenumber].push(updatedFormData);
-    //         } else {
-    //             storedCustomers[formData.phonenumber] = [updatedFormData];
-    //         }
-
-    //         storedCustomers.push(updatedFormData);
-
-    //         // Push the new entry under the phone number group
-    //         customerGroup.push(updatedFormData);
-    //         storedCustomers[formData.phonenumber] = customerGroup;
-
-    //         // Save updated data to local storage
-    //         localStorage.setItem('customers', JSON.stringify(storedCustomers));
-
-    //         // Navigate back to the customer list
-    //         navigate('/customers');
-    //     }
-    // };
-
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
         if (validate()) {
+            try {
+                const formDataToSend = new FormData();
 
-            const totalPaid = formData.payments.reduce((acc, payment) => acc + parseFloat(payment.amount), 0);
-            const currentAmountValue = parseFloat(formData.CurrentAmount) || 0;
-            const totalAmount = parseFloat(formData.amount) || 0;
+                // Append other form fields to FormData
+                formDataToSend.append('app_no', String(formData.app_no));
+                formDataToSend.append('username', formData.username);
+                formDataToSend.append('address', formData.address);
+                formDataToSend.append('ph_no', String(formData.ph_no));
+                formDataToSend.append('item_weight', String(formData.item_weight));
+                formDataToSend.append('amount', String(formData.amount));
+                formDataToSend.append('pending', String(formData.pending));
+                formDataToSend.append('current_amount', String(formData.current_amount));
+                formDataToSend.append('start_date', formData.start_date);
+                formDataToSend.append('end_date', formData.end_date);
+                formDataToSend.append('note', formData.note);
+                formDataToSend.append('status', formData.status);
 
-            // Check if adding the current amount exceeds the total amount
-            if (totalPaid + currentAmountValue > totalAmount) {
-                setErrors(prevErrors => ({
-                    ...prevErrors,
-                    CurrentAmount: "Current amount exceeds the remaining balance."
-                }));
-                return;
+                // Append each image file to FormData
+                if (formData.image && formData.image.length > 0) {
+                    formData.image.forEach((file) => {
+                        formDataToSend.append('image', file);  // Send as a file
+                    });
+                }
+
+                // Make the POST request using axiosInstance
+                const response = await axiosInstance.post(FORM_URL, formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                console.log("Customer added successfully", response.data);
+                navigate('/customers', { state: response.data });
+            } catch (error) {
+                console.error('Error adding customer:', error);
             }
-
-            const storedCustomers = JSON.parse(localStorage.getItem('customers') || '[]');
-
-            const newPayment: Payment = {
-                date: new Date().toISOString(),
-                amount: formData.CurrentAmount
-            };
-
-            const updatedFormData = {
-                ...formData,
-                payments: [...formData.payments, newPayment],
-                CurrentAmount: "", // Reset current amount
-            };
-
-            if (location.state?.customerData) {
-                // Update existing customer
-                const updatedCustomers = storedCustomers.map((customer: FormData) =>
-                    customer.applicationNumber === location.state.customerData.applicationNumber
-                        ? { ...updatedFormData }
-                        : customer
-                );
-                localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-            } else {
-                // Add a new customer
-                storedCustomers.push(updatedFormData);
-                localStorage.setItem('customers', JSON.stringify(storedCustomers));
-            }
-
-            // After saving, navigate back to the customer table and profile page
-            navigate('/customers', { state: updatedFormData }); // This ensures that the updated customer data is passed back
         }
     };
+
     return (
         <div className='p-6'>
             <h2 className='text-2xl font-bold mb-6'>Customer Form</h2>
             <form onSubmit={handleSubmit}>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    {/* Other input fields */}
                     <div>
                         <label className='block'>Application Number</label>
                         <input
-                            type="text"
-                            name='applicationNumber'
-                            value={formData.applicationNumber}
+                            type="number"
+                            name='app_no'
+                            value={formData.app_no}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.applicationNumber && <span className='text-red-500'>{errors.applicationNumber}</span>}
+                        {errors.app_no && <span className='text-red-500'>{errors.app_no}</span>}
                     </div>
 
                     <div>
@@ -323,27 +231,27 @@ const CustomerPage: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className='block'>Phonenumber</label>
+                        <label className='block'>Phone Number</label>
                         <input
                             type="number"
-                            name='phonenumber'
-                            value={formData.phonenumber}
+                            name='ph_no'
+                            value={formData.ph_no}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.phonenumber && <span className='text-red-500'>{errors.phonenumber}</span>}
+                        {errors.ph_no && <span className='text-red-500'>{errors.ph_no}</span>}
                     </div>
 
                     <div>
                         <label className='block'>Item Weight</label>
                         <input
                             type="number"
-                            name='ItemWeight'
-                            value={formData.ItemWeight}
+                            name='item_weight'
+                            value={formData.item_weight}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.ItemWeight && <span className='text-red-500'>{errors.ItemWeight}</span>}
+                        {errors.item_weight && <span className='text-red-500'>{errors.item_weight}</span>}
                     </div>
 
                     <div>
@@ -362,49 +270,49 @@ const CustomerPage: React.FC = () => {
                         <label className='block'>Pending Amount</label>
                         <input
                             type="number"
-                            name='PendingAmount'
+                            name='pending'
                             disabled
-                            value={formData.PendingAmount}
+                            value={formData.pending}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.PendingAmount && <span className='text-red-500'>{errors.PendingAmount}</span>}
+                        {errors.pending && <span className='text-red-500'>{errors.pending}</span>}
                     </div>
 
                     <div>
-                        <label className='block'>Current amount</label>
+                        <label className='block'>Current Amount</label>
                         <input
                             placeholder='0'
                             type="number"
-                            name='CurrentAmount'
-                            value={formData.CurrentAmount}
+                            name='current_amount'
+                            value={formData.current_amount}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.CurrentAmount && <span className='text-red-500'>{errors.CurrentAmount}</span>}
+                        {errors.current_amount && <span className='text-red-500'>{errors.current_amount}</span>}
                     </div>
 
                     <div>
                         <label className='block'>Starting Date</label>
                         <input
                             type="date"
-                            name='StaringDate'
-                            value={formData.StaringDate}
+                            name='start_date'
+                            value={formData.start_date}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.StaringDate && <span className='text-red-500'>{errors.StaringDate}</span>}
+                        {errors.start_date && <span className='text-red-500'>{errors.start_date}</span>}
                     </div>
 
                     <div>
                         <label className='block'>Ending Date</label>
                         <input
                             type="date"
-                            name='EndingDate'
-                            value={formData.EndingDate}
+                            name='end_date'
+                            value={formData.end_date}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
-                        {errors.EndingDate && <span className='text-red-500'>{errors.EndingDate}</span>}
+                        {errors.end_date && <span className='text-red-500'>{errors.end_date}</span>}
                     </div>
 
                     <div>
@@ -423,20 +331,12 @@ const CustomerPage: React.FC = () => {
                         <label className='block'>Upload Image</label>
                         <input
                             type="file"
-                            name='images'
+                            name='image'
                             multiple
                             onChange={handleImageUpload}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
+                            accept='image/*'
                         />
-                        {formData.images.length > 0 && (
-                            <div className="mt-2">
-                                {formData.images.map((image, idx) => (
-                                    <div key={idx}>
-                                        <img src={image} alt={`Uploaded image ${idx + 1}`} className="h-12 w-12 object-cover rounded" />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
 

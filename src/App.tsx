@@ -17,7 +17,6 @@ const App: React.FC = () => {
 
 
   return (
-
     <Router>
       <div className="flex">
         <Sidebar />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface FormData {
     applicationNumber: string;
@@ -21,6 +21,8 @@ export default function Report() {
     const [filteredCustomers, setFilteredCustomers] = useState<FormData[]>([]);
     const [searchPhone, setSearchPhone] = useState<string>('');
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const navigate = useNavigate();
+
 
 
     // Load customers from local storage when the component mounts
@@ -32,6 +34,12 @@ export default function Report() {
             setFilteredCustomers(parsedCustomers);
         }
     }, []);
+
+
+    const handleViewProfile = (phonenumber: string) => {
+        const customersWithSamePhone = customers.filter(customer => customer.phonenumber === phonenumber);
+        navigate('/profiles', { state: { customers: customersWithSamePhone } });
+    };
 
     // Handle search for phone number filtering
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,11 +57,11 @@ export default function Report() {
 
     // Handle image click to show in modal
     const handleImageClick = (image: string) => {
-        setSelectedImage(image); // Set the clicked image as the selected image
+        setSelectedImage(image);
     };
 
     const closeModal = () => {
-        setSelectedImage(null); // Close the modal by resetting the selected image
+        setSelectedImage(null);
     };
 
     // Function to download the data as CSV
@@ -155,9 +163,12 @@ export default function Report() {
                                     </Link>
                                 </td>
                                 <td className="border p-2">
-                                    <Link to="/profile" state={customer} className="text-blue-500 hover:underline">
+                                    <button
+                                        onClick={() => handleViewProfile(customer.phonenumber)}
+                                        className="text-blue-500 hover:underline"
+                                    >
                                         {customer.username}
-                                    </Link>
+                                    </button>
                                 </td>
                                 <td className="border p-2">{customer.address}</td>
                                 <td className="border p-2">{customer.phonenumber}</td>

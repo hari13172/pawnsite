@@ -2,22 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaRegEdit } from 'react-icons/fa';
+import { FormData } from '../models/FormData';
 
-interface FormData {
-  applicationNumber: string;
-  username: string;
-  address: string;
-  phonenumber: string;
-  ItemWeight: string;
-  amount: string;
-  PendingAmount: string;
-  CurrentAmount: string;
-  StaringDate: string;
-  EndingDate: string;
-  note: string;
-  status: 'pending' | 'completed';
-  images: string[]; // Will store image URLs or base64 strings
-}
+
 
 export default function CustomerFormWithTable() {
   const navigate = useNavigate();
@@ -44,7 +31,7 @@ export default function CustomerFormWithTable() {
       setFilteredCustomers(customers);
     } else {
       const filtered = customers.filter((customer) =>
-        customer.phonenumber.includes(query)
+        customer.ph_no.toString().includes(query)
       );
       setFilteredCustomers(filtered);
     }
@@ -57,8 +44,8 @@ export default function CustomerFormWithTable() {
 
 
 
-  const handleViewProfile = (phonenumber: string) => {
-    const customersWithSamePhone = customers.filter(customer => customer.phonenumber === phonenumber);
+  const handleViewProfile = (phonenumber: number) => {
+    const customersWithSamePhone = customers.filter(customer => customer.ph_no === phonenumber);
     navigate('/profiles', { state: { customers: customersWithSamePhone } });
   };
 
@@ -96,6 +83,7 @@ export default function CustomerFormWithTable() {
   const closeModal = () => {
     setSelectedImage(null); // Close the modal by resetting the selected image
   };
+
 
   return (
     <div className="p-4">
@@ -137,11 +125,11 @@ export default function CustomerFormWithTable() {
             filteredCustomers.slice().reverse().map((customer, index) => (
               <tr key={index} className="text-center">
                 <td className="border p-2">
-                  <Link to="/profile" state={customer} className="text-blue-500 hover:underline">{customer.applicationNumber}</Link>
+                  <Link to="/profile" state={customer} className="text-blue-500 hover:underline">{customer.app_no}</Link>
                 </td>
                 <td className="border p-2">
                   <button
-                    onClick={() => handleViewProfile(customer.phonenumber)}
+                    onClick={() => handleViewProfile(customer.ph_no)}
                     className="text-blue-500 hover:underline"
                   >
                     {customer.username}
@@ -149,14 +137,14 @@ export default function CustomerFormWithTable() {
                 </td>
                 {/* Other customer details */}
                 <td className="border p-2">{customer.address}</td>
-                <td className="border p-2">{customer.phonenumber}</td>
-                <td className="border p-2">{customer.ItemWeight}</td>
+                <td className="border p-2">{customer.ph_no}</td>
+                <td className="border p-2">{customer.item_weight}</td>
                 <td className="border p-2">{customer.amount}</td>
-                <td className="border p-2">{customer.PendingAmount}</td>
-                <td className="border p-2">{customer.StaringDate}</td>
-                <td className="border p-2">{customer.EndingDate}</td>
+                <td className="border p-2">{customer.pending}</td>
+                <td className="border p-2">{customer.start_date}</td>
+                <td className="border p-2">{customer.end_date}</td>
                 {/* <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td> */}
-                <td className='border-2'>
+                <td className='border-2 p-2'>
                   <select className="border p-2 rounded" value={customer.status} onChange={(e) => handleStatusChange(index, e.target.value as 'pending' | 'completed')} >
                     <option value="pending">Pending</option>
                     <option value="completed">Completed</option>
@@ -178,12 +166,12 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.note}</td>
 
                 <td className="border p-2">
-                  {customer.images && customer.images.length > 0 && (
+                  {customer.image && customer.image.length > 0 && (
                     <img
-                      src={customer.images[0]} // Use the image URL directly
+                      src={customer.image[0]} // Use the image URL directly
                       alt="Uploaded"
                       className="h-12 w-12 object-cover rounded cursor-pointer"
-                      onClick={() => handleImageClick(customer.images[0])} // Handle image click
+                      onClick={() => handleImageClick(customer.image[0])} // Handle image click
                     />
                   )}
                 </td>
@@ -206,13 +194,30 @@ export default function CustomerFormWithTable() {
 
 // Modal Component for Image Preview
 const ImageModal = ({ image, onClose }: { image: string; onClose: () => void }) => {
+  const handleClickOutside = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    // Check if the clicked element is the background (modal overlay)
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl max-h-screen">
-        <img src={image} alt="Preview" className="max-w-full max-h-screen object-contain" />
-        <button onClick={onClose} className="mt-4 bg-red-500 text-white p-2 rounded">
-          Close
+    <div
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+      onClick={handleClickOutside}  // Add onClick handler to the background
+    >
+      <div className="relative bg-white p-8 rounded-lg shadow-lg max-w-3xl max-h-screen">
+        {/* Close button positioned in the top-right corner */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 bg-red-500 text-white p-2 px-4 rounded-full text-4xl"
+        >
+          &times;
+          {/* Close */}
         </button>
+
+        {/* Image */}
+        <img src={image} alt="Preview" className="max-w-full max-h-screen object-contain" />
       </div>
     </div>
   );
