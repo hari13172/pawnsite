@@ -16,12 +16,12 @@ const Sidebar: React.FC = () => {
                 className={`${isOpen ? 'w-64' : 'w-16'
                     } lg:h-screen bg-gray-800 text-white transition-all duration-300 fixed top-0 left-0 z-10 flex flex-col`}
             >
-                <div className="p-4 flex items-center justify-between">
+                {/* <div className="p-4 flex items-center justify-between">
                     {isOpen && <div className="text-2xl font-bold">Pawmshop Admin</div>}
                     <button onClick={toggleSidebar} className="text-2xl">
                         {isOpen ? <FaTimes /> : <FaBars />}
                     </button>
-                </div>
+                </div> */}
 
                 <ul className={`space-y-2 mt-4 p-4 ${isOpen ? 'block' : 'hidden'}`}>
                     <li>

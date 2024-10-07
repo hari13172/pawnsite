@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { axiosInstance } from '../api/axiosConfig';
-import { FORM_URL } from '../api/endpoint';
+import { PUT_URL } from '../api/endpoint';
+import axios from 'axios';
 
 // Types for data
 interface Payment {
@@ -41,7 +42,7 @@ interface FormErrors {
     note?: string;
 }
 
-const CustomerPage: React.FC = () => {
+const UpdateCustomer: React.FC = () => {
     const [formData, setFormData] = useState<FormData>({
         app_no: 0,
         username: "",
@@ -61,37 +62,28 @@ const CustomerPage: React.FC = () => {
 
     const [errors, setErrors] = useState<FormErrors>({});
     const navigate = useNavigate();
-    const location = useLocation();
+    const { id } = useParams<{ id: string }>(); // Fetch id from route params
+    const [loading, setLoading] = useState(true);
 
-    const handleReset = () => {
-        setFormData({
-            app_no: 0,
-            username: "",
-            address: "",
-            ph_no: 0,
-            item_weight: 0,
-            amount: 0,
-            pending: 0,
-            current_amount: 0,
-            start_date: "",
-            end_date: "",
-            note: "",
-            image: [],
-            status: 'pending',
-            payments: []
-        });
-        setErrors({});
-    };
-
+    // Fetch customer data when the component mounts
     useEffect(() => {
-        if (location.state && location.state.customerData) {
-            const customerData = location.state.customerData as FormData;
-            setFormData({
-                ...customerData,
-                payments: customerData.payments || []
-            });
-        }
-    }, [location.state]);
+        const fetchCustomerData = async () => {
+            try {
+                const response = await axios.get(`http://172.20.0.26:8000/customers/${id}`);
+                const customerData = response.data;
+                setFormData({
+                    ...customerData,
+                    current_amount: 0, // Reset current amount to avoid conflict
+                });
+            } catch (error) {
+                console.error('Error fetching customer data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCustomerData();
+    }, [id]);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -99,30 +91,32 @@ const CustomerPage: React.FC = () => {
         setFormData((prevFormData) => {
             let updatedFormData = { ...prevFormData, [name]: value };
 
-            if (name === "current_amount" || name === "amount") {
-                const amountValue = parseFloat(updatedFormData.amount as any) || 0;
-                const totalPaid = prevFormData.payments.reduce((acc, payment) => acc + parseFloat(payment.amount as any), 0);
-                const current_amountValue = parseFloat(updatedFormData.current_amount as any) || 0;
-                const pending = parseInt((amountValue - totalPaid - current_amountValue).toFixed(2));
+            // If current_amount is updated, adjust the pending amount accordingly
+            if (name === "current_amount") {
+                const currentAmountValue = parseFloat(value) || 0;
+                const pending = prevFormData.pending - currentAmountValue;
 
-                updatedFormData = { ...updatedFormData, pending };
+                updatedFormData = { ...updatedFormData, pending: pending >= 0 ? pending : 0 };
             }
 
             return updatedFormData;
         });
     };
 
+
+
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
 
-            // Store the file(s) directly in formData
+            // Ensure we are storing an array of file objects
             setFormData({
                 ...formData,
-                image: files  // Store file object(s) directly
+                image: files,  // Store the file(s) as an array of File objects
             });
         }
     };
+
 
     const validate = (): boolean => {
         let tempErrors: FormErrors = {};
@@ -166,34 +160,34 @@ const CustomerPage: React.FC = () => {
                 formDataToSend.append('note', formData.note);
                 formDataToSend.append('status', formData.status);
 
-                // Append each image file to FormData
-                if (formData.image && formData.image.length > 0) {
+                // Check if image is an array of files, then append each file to formDataToSend
+                if (Array.isArray(formData.image)) {
                     formData.image.forEach((file) => {
                         formDataToSend.append('image', file);  // Send as a file
                     });
                 }
 
-                // Make the POST request using axiosInstance
-                const response = await axiosInstance.post(FORM_URL, formDataToSend, {
+                // Make the PUT request using axiosInstance
+                const response = await axiosInstance.put(PUT_URL + id, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
 
-                console.log("Customer added successfully", response.data);
+                console.log("Customer updated successfully", response.data);
                 navigate('/customers');
             } catch (error) {
-                console.error('Error adding customer:', error);
+                console.error('Error updating customer:', error);
             }
         }
     };
 
     return (
         <div className='p-6'>
-            <h2 className='text-2xl font-bold mb-6'>Customer Form</h2>
+            <h2 className='text-2xl font-bold mb-6'>Customer Update Form</h2>
             <form onSubmit={handleSubmit}>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                    {/* Other input fields */}
+                    {/* Application Number */}
                     <div>
                         <label className='block'>Application Number</label>
                         <input
@@ -206,8 +200,9 @@ const CustomerPage: React.FC = () => {
                         {errors.app_no && <span className='text-red-500'>{errors.app_no}</span>}
                     </div>
 
+                    {/* Username */}
                     <div>
-                        <label className='block'>UserName</label>
+                        <label className='block'>Username</label>
                         <input
                             type="text"
                             name='username'
@@ -218,6 +213,7 @@ const CustomerPage: React.FC = () => {
                         {errors.username && <span className='text-red-500'>{errors.username}</span>}
                     </div>
 
+                    {/* Address */}
                     <div>
                         <label className='block'>Address</label>
                         <input
@@ -230,6 +226,7 @@ const CustomerPage: React.FC = () => {
                         {errors.address && <span className='text-red-500'>{errors.address}</span>}
                     </div>
 
+                    {/* Phone Number */}
                     <div>
                         <label className='block'>Phone Number</label>
                         <input
@@ -242,6 +239,7 @@ const CustomerPage: React.FC = () => {
                         {errors.ph_no && <span className='text-red-500'>{errors.ph_no}</span>}
                     </div>
 
+                    {/* Item Weight */}
                     <div>
                         <label className='block'>Item Weight</label>
                         <input
@@ -254,6 +252,7 @@ const CustomerPage: React.FC = () => {
                         {errors.item_weight && <span className='text-red-500'>{errors.item_weight}</span>}
                     </div>
 
+                    {/* Amount */}
                     <div>
                         <label className='block'>Amount</label>
                         <input
@@ -266,6 +265,34 @@ const CustomerPage: React.FC = () => {
                         {errors.amount && <span className='text-red-500'>{errors.amount}</span>}
                     </div>
 
+
+                    {/* Start Date */}
+                    <div>
+                        <label className='block'>Starting Date</label>
+                        <input
+                            type="date"
+                            name='start_date'
+                            value={formData.start_date}
+                            onChange={handleInputChange}
+                            className='w-full p-2 border border-gray-300 rounded mt-1'
+                        />
+                        {errors.start_date && <span className='text-red-500'>{errors.start_date}</span>}
+                    </div>
+
+                    {/* End Date */}
+                    <div>
+                        <label className='block'>Ending Date</label>
+                        <input
+                            type="date"
+                            name='end_date'
+                            value={formData.end_date}
+                            onChange={handleInputChange}
+                            className='w-full p-2 border border-gray-300 rounded mt-1'
+                        />
+                        {errors.end_date && <span className='text-red-500'>{errors.end_date}</span>}
+                    </div>
+
+                    {/* Pending Amount */}
                     <div>
                         <label className='block'>Pending Amount</label>
                         <input
@@ -278,6 +305,7 @@ const CustomerPage: React.FC = () => {
                         {errors.pending && <span className='text-red-500'>{errors.pending}</span>}
                     </div>
 
+                    {/* Current Amount */}
                     <div>
                         <label className='block'>Current Amount</label>
                         <input
@@ -291,30 +319,8 @@ const CustomerPage: React.FC = () => {
                         {errors.current_amount && <span className='text-red-500'>{errors.current_amount}</span>}
                     </div>
 
-                    <div>
-                        <label className='block'>Starting Date</label>
-                        <input
-                            type="date"
-                            name='start_date'
-                            value={formData.start_date}
-                            onChange={handleInputChange}
-                            className='w-full p-2 border border-gray-300 rounded mt-1'
-                        />
-                        {errors.start_date && <span className='text-red-500'>{errors.start_date}</span>}
-                    </div>
 
-                    <div>
-                        <label className='block'>Ending Date</label>
-                        <input
-                            type="date"
-                            name='end_date'
-                            value={formData.end_date}
-                            onChange={handleInputChange}
-                            className='w-full p-2 border border-gray-300 rounded mt-1'
-                        />
-                        {errors.end_date && <span className='text-red-500'>{errors.end_date}</span>}
-                    </div>
-
+                    {/* Note */}
                     <div>
                         <label className='block'>Note</label>
                         <input
@@ -327,6 +333,7 @@ const CustomerPage: React.FC = () => {
                         {errors.note && <span className='text-red-500'>{errors.note}</span>}
                     </div>
 
+                    {/* Image Upload */}
                     <div>
                         <label className='block'>Upload Image</label>
                         <input
@@ -341,12 +348,14 @@ const CustomerPage: React.FC = () => {
                 </div>
 
                 <div className='mt-6'>
-                    <button className="bg-blue-500 text-white p-3 rounded mr-4" type='submit'>{location.state?.customerData ? "Update" : "Save"}</button>
-                    <button onClick={handleReset} className="bg-blue-500 text-white p-3 rounded mr-4" type='button'>Reset</button>
+                    <button className="bg-blue-500 text-white p-3 rounded mr-4" type='submit'>
+                        {id ? "Update" : "Save"}
+                    </button>
+                    {/* <button onClick={handleReset} className="bg-blue-500 text-white p-3 rounded mr-4" type='button'>Reset</button> */}
                 </div>
             </form>
         </div>
     );
 };
 
-export default CustomerPage;
+export default UpdateCustomer;

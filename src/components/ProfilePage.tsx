@@ -1,32 +1,35 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { FormData } from '../models/FormData';
 
-interface Payment {
-    date: string;
-    amount: string;
-}
-
-interface FormData {
-    applicationNumber: string;
-    username: string;
-    address: string;
-    phonenumber: string;
-    ItemWeight: string;
-    amount: string;
-    PendingAmount: string;
-    CurrentAmount: string;
-    StaringDate: string;
-    EndingDate: string;
-    status: 'pending' | 'completed';
-    payments: Payment[];
-}
 
 const ProfilePage: React.FC = () => {
-    const location = useLocation();
-    const customerData = location.state as FormData;
+    const { id } = useParams<{ id: string }>(); // Fetch id from route params
+    const [customerData, setCustomerData] = useState<FormData | null>(null);
+    const [pendingAmount, setPendingAmount] = useState<number>(0);
+    const [loading, setLoading] = useState(true);
 
-    const [payments, setPayments] = useState<Payment[]>(customerData.payments);
-    const [pendingAmount, setPendingAmount] = useState<string>(customerData.PendingAmount);
+    // Fetch customer data when the component mounts
+    useEffect(() => {
+        const fetchCustomerData = async () => {
+            try {
+                const response = await axios.get(`http://172.20.0.26:8000/customers/${id}`);
+                setCustomerData(response.data);
+                setPendingAmount(response.data.PendingAmount);
+            } catch (error) {
+                console.error('Error fetching customer data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCustomerData();
+    }, [id]); // Make sure to run this effect whenever the id changes
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     if (!customerData) {
         return <div>No customer data available.</div>;
@@ -34,12 +37,12 @@ const ProfilePage: React.FC = () => {
 
     // Check if the due date has passed and if there's still pending amount
     const currentDate = new Date();
-    const dueDate = new Date(customerData.EndingDate);
+    const dueDate = new Date(customerData.end_date);
     const isDueDatePassed = dueDate.getTime() < currentDate.getTime();
-    const hasPendingAmount = parseFloat(pendingAmount) > 0;
+    const hasPendingAmount = pendingAmount > 0;
 
     // Check if the entire due is paid off
-    const isDueCompleted = parseFloat(pendingAmount) === 0;
+    const isDueCompleted = pendingAmount === 0;
 
     return (
         <div className="p-6">
@@ -62,7 +65,7 @@ const ProfilePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label>Application Number:</label>
-                    <p>{customerData.applicationNumber}</p>
+                    <p>{customerData.app_no}</p>
                 </div>
                 <div>
                     <label>Username:</label>
@@ -74,38 +77,38 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div>
                     <label>Phone Number:</label>
-                    <p>{customerData.phonenumber}</p>
+                    <p>{customerData.ph_no}</p>
                 </div>
                 <div>
                     <label>Item Weight:</label>
-                    <p>{customerData.ItemWeight}</p>
+                    <p>{customerData.item_weight}</p>
                 </div>
                 <div>
                     <label>Amount:</label>
-                    <p>{customerData.amount}</p>
+                    <p>{customerData.amount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</p>
                 </div>
                 <div>
                     <label>Pending Amount:</label>
-                    <p>{pendingAmount}</p>
+                    <p>{pendingAmount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</p>
                 </div>
                 <div>
                     <label>Current Amount:</label>
-                    <p>{customerData.CurrentAmount}</p>
+                    <p>{customerData.current_amount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</p>
                 </div>
                 <div>
                     <label>Starting Date:</label>
-                    <p>{customerData.StaringDate}</p>
+                    <p>{new Date(customerData.start_date).toLocaleDateString() || '-'}</p>
                 </div>
                 <div>
                     <label>Ending Date:</label>
-                    <p>{customerData.EndingDate}</p>
+                    <p>{new Date(customerData.end_date).toLocaleDateString() || '-'}</p>
                 </div>
                 <div>
                     <label>Status:</label>
                     <p>{customerData.status}</p>
                 </div>
-
             </div>
+
             {customerData.payments && customerData.payments.length > 0 && (
                 <div className="mt-6">
                     <h3 className="text-2xl font-bold mb-4">Payment History</h3>
@@ -119,8 +122,8 @@ const ProfilePage: React.FC = () => {
                         <tbody>
                             {customerData.payments.map((payment, index) => (
                                 <tr key={index} className="text-center">
-                                    <td className="border p-2">{new Date(payment.date).toLocaleDateString()}</td>
-                                    <td className="border p-2">{payment.amount}</td>
+                                    <td className="border p-2">{new Date(payment.date).toLocaleDateString() || '-'}</td>
+                                    <td className="border p-2">{payment.amount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>

@@ -12,6 +12,7 @@ import PendingCustomers from './components/PendingCustomer';
 import TotalCustomers from './components/TotalCustomers';
 import DueDateCustomers from './components/DueDateCustomers';
 import CompletedCustomers from './components/CompletedCustomers';
+import UpdateCustomer from './components/UpdateCustomer';
 
 const App: React.FC = () => {
 
@@ -27,9 +28,10 @@ const App: React.FC = () => {
             <Route path='/transaction' element={<TransactionPage />} />
             <Route path='/reports' element={<ReporPage />} />
             <Route path='/addcustomer' element={<CustomerPage />} />
+            <Route path='/updatecustomer/:id' element={<UpdateCustomer />} />
             <Route path='/customers' element={<CustomerFormWithTable />} />
-            <Route path='/profile' element={<ProfilePage />} />
-            <Route path='/profiles' element={<Profile />} />
+            <Route path='/customers/:id' element={<ProfilePage />} />
+            <Route path='/profiles' element={<Profile />} />         {/* while clicking name */}
             <Route path='/pending-customers' element={<PendingCustomers />} />
             <Route path='/all-customers' element={<TotalCustomers />} />
             <Route path='/due-customers' element={<DueDateCustomers />} />

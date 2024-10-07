@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaRegEdit } from 'react-icons/fa';
 import { FormData } from '../models/FormData';
+import axios from 'axios';
 
 
 
@@ -13,15 +14,23 @@ export default function CustomerFormWithTable() {
   const [searchPhone, setSearchPhone] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Load customers from local storage when the component mounts
+  // Fetch customers from the API when the component mounts
   useEffect(() => {
-    const storedCustomers = localStorage.getItem('customers');
-    if (storedCustomers) {
-      const parsedCustomers = JSON.parse(storedCustomers);
-      setCustomers(parsedCustomers);
-      setFilteredCustomers(parsedCustomers);
-    }
+    const fetchCustomers = async () => {
+      try {
+        const response = await axios.get('http://172.20.0.26:8000/customers'); // Make a GET request to your API
+        const fetchedCustomers = response.data;
+        setCustomers(fetchedCustomers);
+        setFilteredCustomers(fetchedCustomers);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      }
+    };
+
+    fetchCustomers();
   }, []);
+
+
 
   // Handle search for phone number filtering
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +48,7 @@ export default function CustomerFormWithTable() {
 
   // Edit customer function (navigate to form page with customer data)
   const handleEdit = (customer: FormData) => {
-    navigate('/addcustomer', { state: { customerData: customer } });
+    navigate(`/updatecustomer/${customer.app_no}`);
   };
 
 
@@ -112,6 +121,7 @@ export default function CustomerFormWithTable() {
             <th className="border p-2">Item Weight</th>
             <th className="border p-2">Amount</th>
             <th className="border p-2">Pending Amount</th>
+            <th className="border p-2">Current Amount</th>
             <th className="border p-2">Starting Date</th>
             <th className="border p-2">Ending Date</th>
             <th className="border p-2">Status</th>
@@ -125,7 +135,7 @@ export default function CustomerFormWithTable() {
             filteredCustomers.slice().reverse().map((customer, index) => (
               <tr key={index} className="text-center">
                 <td className="border p-2">
-                  <Link to="/profile" state={customer} className="text-blue-500 hover:underline">{customer.app_no}</Link>
+                  <Link to={`/customers/${customer.app_no}`} state={customer} className="text-blue-500 hover:underline">{customer.app_no}</Link>
                 </td>
                 <td className="border p-2">
                   <button
@@ -141,6 +151,7 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.item_weight}</td>
                 <td className="border p-2">{customer.amount}</td>
                 <td className="border p-2">{customer.pending}</td>
+                <td className="border p-2">{customer.current_amount}</td>
                 <td className="border p-2">{customer.start_date}</td>
                 <td className="border p-2">{customer.end_date}</td>
                 {/* <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td> */}
@@ -168,10 +179,10 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">
                   {customer.image && customer.image.length > 0 && (
                     <img
-                      src={customer.image[0]} // Use the image URL directly
+                      src={"http://172.20.0.26:8000/" + customer.image} // Use the image URL directly
                       alt="Uploaded"
                       className="h-12 w-12 object-cover rounded cursor-pointer"
-                      onClick={() => handleImageClick(customer.image[0])} // Handle image click
+                      onClick={() => handleImageClick("http://172.20.0.26:8000/" + customer.image)} // Handle image click
                     />
                   )}
                 </td>
