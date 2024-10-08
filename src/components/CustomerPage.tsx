@@ -11,18 +11,18 @@ interface Payment {
 }
 
 interface FormData {
-    app_no: number;
+    app_no: number | ''; // Ensures a default value
     username: string;
     address: string;
-    ph_no: number;
-    item_weight: number;
-    amount: number;
-    pending: number;
-    current_amount: number;
+    ph_no: number | '';  // Ensures a default value
+    item_weight: number | ''; // Ensures a default value
+    amount: number | ''; // Ensures a default value
+    pending: number | ''; // Ensures a default value
+    current_amount: number | ''; // Ensures a default value
     start_date: string;
     end_date: string;
     note: string;
-    image: File[];  // Changed to File[] to store the file objects
+    image: File[]; // Changed to File[] to store the file objects
     status: 'pending' | 'completed';
     payments: Payment[];
 }
@@ -43,14 +43,14 @@ interface FormErrors {
 
 const CustomerPage: React.FC = () => {
     const [formData, setFormData] = useState<FormData>({
-        app_no: 0,
+        app_no: 0, // Default to empty string
         username: "",
         address: "",
-        ph_no: 0,
-        item_weight: 0,
-        amount: 0,
-        pending: 0,
-        current_amount: 0,
+        ph_no: 0, // Default to empty string
+        item_weight: 0, // Default to empty string
+        amount: 0, // Default to empty string
+        pending: 0, // Default to empty string
+        current_amount: 0, // Default to empty string
         start_date: "",
         end_date: "",
         note: "",
@@ -60,19 +60,20 @@ const CustomerPage: React.FC = () => {
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
+    const [phoneNumber, setPhoneNumber] = useState<string>("");
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleReset = () => {
         setFormData({
-            app_no: 0,
+            app_no: '',
             username: "",
             address: "",
-            ph_no: 0,
-            item_weight: 0,
-            amount: 0,
-            pending: 0,
-            current_amount: 0,
+            ph_no: '',
+            item_weight: '',
+            amount: '',
+            pending: '',
+            current_amount: '',
             start_date: "",
             end_date: "",
             note: "",
@@ -83,15 +84,32 @@ const CustomerPage: React.FC = () => {
         setErrors({});
     };
 
-    useEffect(() => {
-        if (location.state && location.state.customerData) {
-            const customerData = location.state.customerData as FormData;
-            setFormData({
-                ...customerData,
-                payments: customerData.payments || []
-            });
+    const fetchCustomerByPhone = async (phone: string) => {
+        try {
+            const response = await axiosInstance.get(`http://172.20.0.26:8000/filter/${phone}`);
+            const customerData = response.data[0];
+            console.log(customerData)
+            if (customerData) {
+                setFormData({
+                    ...formData,
+                    username: customerData.username,
+                    address: customerData.address,
+                    ph_no: customerData.ph_no,
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching customer by phone number:', error);
         }
-    }, [location.state]);
+    };
+
+    const handlePhoneNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const phone = e.target.value;
+        setPhoneNumber(phone);
+
+        if (phone.length === 10) {
+            fetchCustomerByPhone(phone);
+        }
+    };
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -115,8 +133,6 @@ const CustomerPage: React.FC = () => {
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-
-            // Store the file(s) directly in formData
             setFormData({
                 ...formData,
                 image: files  // Store file object(s) directly
@@ -129,11 +145,11 @@ const CustomerPage: React.FC = () => {
         const phoneRegex = /^[0-9]{10}$/;
         const weightRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
         const amountRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
-
+        console.log(formData.ph_no)
         if (!formData.app_no) tempErrors.app_no = "Application number is required";
         if (!formData.username) tempErrors.username = "Username is required";
         if (!formData.address) tempErrors.address = "Address is required";
-        if (!phoneRegex.test(String(formData.ph_no))) tempErrors.ph_no = "Phone number must be 10 digits";
+        if (String(formData.ph_no).length != 10) tempErrors.ph_no = "Phone number must be 10 digits";
         if (!weightRegex.test(String(formData.item_weight))) tempErrors.item_weight = "Weight should be a valid number";
         if (!amountRegex.test(String(formData.amount))) tempErrors.amount = "Amount should be a valid number";
         if (!amountRegex.test(String(formData.pending))) tempErrors.pending = "Pending amount should be a valid number";
@@ -193,19 +209,34 @@ const CustomerPage: React.FC = () => {
             <h2 className='text-2xl font-bold mb-6'>Customer Form</h2>
             <form onSubmit={handleSubmit}>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                    {/* Other input fields */}
+                    {/* Phone Number Search */}
+                    <div>
+                        <label className='block'>Phone Number</label>
+                        <input
+                            type="text"
+                            name='ph_no'
+                            value={phoneNumber}
+                            onChange={handlePhoneNumberChange}
+                            className='w-full p-2 border border-gray-300 rounded mt-1'
+                            placeholder="Enter phone number to search"
+                        />
+                        {errors.ph_no && <span className='text-red-500'>{errors.ph_no}</span>}
+                    </div>
+
+                    {/* Application Number */}
                     <div>
                         <label className='block'>Application Number</label>
                         <input
                             type="number"
                             name='app_no'
-                            value={formData.app_no}
+                            value={formData.app_no || ''}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
                         {errors.app_no && <span className='text-red-500'>{errors.app_no}</span>}
                     </div>
 
+                    {/* Other form fields like username, address, item_weight, etc. */}
                     <div>
                         <label className='block'>UserName</label>
                         <input
@@ -231,23 +262,11 @@ const CustomerPage: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className='block'>Phone Number</label>
-                        <input
-                            type="number"
-                            name='ph_no'
-                            value={formData.ph_no}
-                            onChange={handleInputChange}
-                            className='w-full p-2 border border-gray-300 rounded mt-1'
-                        />
-                        {errors.ph_no && <span className='text-red-500'>{errors.ph_no}</span>}
-                    </div>
-
-                    <div>
                         <label className='block'>Item Weight</label>
                         <input
                             type="number"
                             name='item_weight'
-                            value={formData.item_weight}
+                            value={formData.item_weight || ''}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
@@ -259,7 +278,7 @@ const CustomerPage: React.FC = () => {
                         <input
                             type="number"
                             name='amount'
-                            value={formData.amount}
+                            value={formData.amount || ''}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
@@ -272,7 +291,7 @@ const CustomerPage: React.FC = () => {
                             type="number"
                             name='pending'
                             disabled
-                            value={formData.pending}
+                            value={formData.pending || ''}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
                         {errors.pending && <span className='text-red-500'>{errors.pending}</span>}
@@ -284,7 +303,7 @@ const CustomerPage: React.FC = () => {
                             placeholder='0'
                             type="number"
                             name='current_amount'
-                            value={formData.current_amount}
+                            value={formData.current_amount || ''}
                             onChange={handleInputChange}
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
@@ -341,7 +360,9 @@ const CustomerPage: React.FC = () => {
                 </div>
 
                 <div className='mt-6'>
-                    <button className="bg-blue-500 text-white p-3 rounded mr-4" type='submit'>{location.state?.customerData ? "Update" : "Save"}</button>
+                    <button className="bg-blue-500 text-white p-3 rounded mr-4" type='submit'>
+                        Save
+                    </button>
                     <button onClick={handleReset} className="bg-blue-500 text-white p-3 rounded mr-4" type='button'>Reset</button>
                 </div>
             </form>
