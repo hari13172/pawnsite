@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FormData } from '../models/FormData';
 
-interface FormData {
-    applicationNumber: string;
-    username: string;
-    address: string;
-    phonenumber: string;
-    ItemWeight: string;
-    amount: string;
-    PendingAmount: string;
-    StaringDate: string;
-    EndingDate: string;
-    note: string;
-    images: string[]; // Images as URLs or base64 strings
-    status: 'pending' | 'completed';
-}
 
 export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
@@ -36,8 +23,8 @@ export default function Report() {
     }, []);
 
 
-    const handleViewProfile = (phonenumber: string) => {
-        const customersWithSamePhone = customers.filter(customer => customer.phonenumber === phonenumber);
+    const handleViewProfile = (phonenumber: number) => {
+        const customersWithSamePhone = customers.filter(customer => customer.ph_no === phonenumber);
         navigate('/profiles', { state: { customers: customersWithSamePhone } });
     };
 
@@ -49,7 +36,7 @@ export default function Report() {
             setFilteredCustomers(customers);
         } else {
             const filtered = customers.filter((customer) =>
-                customer.phonenumber.includes(query)
+                customer.ph_no.toString().includes(query)
             );
             setFilteredCustomers(filtered);
         }
@@ -78,22 +65,22 @@ export default function Report() {
             "Ending Date",
             "Status",
             "Notes",
-            "Images"
+            "image"
         ];
 
         const rows = filteredCustomers.map(customer => [
-            customer.applicationNumber,
+            customer.app_no,
             customer.username,
             customer.address,
-            customer.phonenumber,
-            customer.ItemWeight,
+            customer.ph_no,
+            customer.item_weight,
             customer.amount,
-            customer.PendingAmount,
-            customer.StaringDate,
-            customer.EndingDate,
+            customer.pending,
+            customer.start_date,
+            customer.end_date,
             customer.status,
             customer.note,
-            customer.images.join('|') // Joining image URLs or base64 strings with '|'
+            customer.image.join('|') // Joining image URLs or base64 strings with '|'
         ]);
 
         const csvContent = [
@@ -159,32 +146,32 @@ export default function Report() {
                             <tr key={index} className="text-center">
                                 <td className="border p-2">
                                     <Link to="/profile" state={customer} className="text-blue-500 hover:underline">
-                                        {customer.applicationNumber}
+                                        {customer.app_no}
                                     </Link>
                                 </td>
                                 <td className="border p-2">
                                     <button
-                                        onClick={() => handleViewProfile(customer.phonenumber)}
+                                        onClick={() => handleViewProfile(customer.ph_no)}
                                         className="text-blue-500 hover:underline"
                                     >
                                         {customer.username}
                                     </button>
                                 </td>
                                 <td className="border p-2">{customer.address}</td>
-                                <td className="border p-2">{customer.phonenumber}</td>
-                                <td className="border p-2">{customer.ItemWeight}</td>
+                                <td className="border p-2">{customer.ph_no}</td>
+                                <td className="border p-2">{customer.item_weight}</td>
                                 <td className="border p-2">{customer.amount}</td>
-                                <td className="border p-2">{customer.PendingAmount}</td>
-                                <td className="border p-2">{customer.StaringDate}</td>
-                                <td className="border p-2">{customer.EndingDate}</td>
+                                <td className="border p-2">{customer.pending}</td>
+                                <td className="border p-2">{customer.start_date}</td>
+                                <td className="border p-2">{customer.end_date}</td>
                                 <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td>
                                 <td className="border p-2">{customer.note}</td>
                                 <td className="border p-2">
-                                    {customer.images && customer.images.length > 0 ? (
+                                    {customer.image && customer.image.length > 0 ? (
                                         <img
-                                            src={customer.images[0]}
+                                            src={customer.image[0]}
                                             alt="Uploaded"
-                                            onClick={() => handleImageClick(customer.images[0])}
+                                            onClick={() => handleImageClick(customer.image[0])}
                                             className="h-12 w-12 object-cover rounded cursor-pointer"
                                         />
                                     ) : (

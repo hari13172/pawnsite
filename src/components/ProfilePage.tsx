@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { json, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FormData } from '../models/FormData';
 
@@ -43,6 +43,15 @@ const ProfilePage: React.FC = () => {
 
     // Check if the entire due is paid off
     const isDueCompleted = pendingAmount === 0;
+    // Safely parse the payment history or return an empty array if invalid
+    const payment_dump = (() => {
+        try {
+            return JSON.parse(customerData.payment_history || '[]');
+        } catch (error) {
+            console.error("Error parsing payment history:", error);
+            return [];
+        }
+    })();
 
     return (
         <div className="p-6">
@@ -89,7 +98,7 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div>
                     <label>Pending Amount:</label>
-                    <p>{pendingAmount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</p>
+                    <p>{customerData.pending?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</p>
                 </div>
                 <div>
                     <label>Current Amount:</label>
@@ -109,7 +118,7 @@ const ProfilePage: React.FC = () => {
                 </div>
             </div>
 
-            {customerData.payments && customerData.payments.length > 0 && (
+            {payment_dump && payment_dump.length > 0 && (
                 <div className="mt-6">
                     <h3 className="text-2xl font-bold mb-4">Payment History</h3>
                     <table className="min-w-full bg-white border">
@@ -120,10 +129,10 @@ const ProfilePage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {customerData.payments.map((payment, index) => (
+                            {payment_dump.map((payment: any, index: any) => (
                                 <tr key={index} className="text-center">
                                     <td className="border p-2">{new Date(payment.date).toLocaleDateString() || '-'}</td>
-                                    <td className="border p-2">{payment.amount?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</td>
+                                    <td className="border p-2">{payment.payment?.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }) || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>

@@ -19,5 +19,5 @@ export interface FormData {
     note: string;
     image: string[];
     status: 'pending' | 'completed';
-    payments: Payment[];
+    payment_history: string;
 }

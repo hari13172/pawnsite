@@ -67,21 +67,27 @@ export default function CustomerFormWithTable() {
     localStorage.setItem('customers', JSON.stringify(newCustomers));
   };
 
-  // Toggle status function
-  const handleStatusChange = (index: number, newstatus: 'pending' | 'completed') => {
-    const updatedCustomers = customers.map((customer, i) => {
-      if (i === index) {
-        return {
-          ...customer,
-          status: newstatus,
-        };
-      }
-      return customer;
-    });
+  const handleStatusChange = async (index: number, newStatus: 'pending' | 'completed') => {
+    const customer = customers[index]; // Get the customer to update
+    const updatedCustomer = { ...customer, status: newStatus };
 
-    setCustomers(updatedCustomers);
-    setFilteredCustomers(updatedCustomers);
-    localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+    try {
+      // Send the PUT request to update the customer's status
+      await axios.put(`http://172.20.0.26:8000/customers/${customer.app_no}`, updatedCustomer);
+
+      // If the API call is successful, update the state
+      const updatedCustomers = customers.map((cust, i) => {
+        if (i === index) {
+          return updatedCustomer;
+        }
+        return cust;
+      });
+
+      setCustomers(updatedCustomers);
+      setFilteredCustomers(updatedCustomers);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   // Handle image click to show in modal
@@ -121,7 +127,6 @@ export default function CustomerFormWithTable() {
             <th className="border p-2">Item Weight</th>
             <th className="border p-2">Amount</th>
             <th className="border p-2">Pending Amount</th>
-            <th className="border p-2">Current Amount</th>
             <th className="border p-2">Starting Date</th>
             <th className="border p-2">Ending Date</th>
             <th className="border p-2">Status</th>
@@ -151,7 +156,6 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.item_weight}</td>
                 <td className="border p-2">{customer.amount}</td>
                 <td className="border p-2">{customer.pending}</td>
-                <td className="border p-2">{customer.current_amount}</td>
                 <td className="border p-2">{customer.start_date}</td>
                 <td className="border p-2">{customer.end_date}</td>
                 {/* <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td> */}

@@ -1,19 +1,23 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+// import { FormData } from '../models/FormData';
+
 
 interface Customer {
-    applicationNumber: string;
+    app_no: number;  // Change from string to number
     username: string;
     address: string;
-    phonenumber: string;
-    ItemWeight: string;
-    amount: string;
-    PendingAmount: string;
-    StaringDate: string;
-    EndingDate: string;
+    ph_no: number;  // Change from string to number
+    item_weight: number;  // Change from string to number
+    amount: number;  // Change from string to number
+    pending: number;  // Change from string to number
+    current_amount: number;  // Change from string to number
+    start_date: string;
+    end_date: string;
     note: string;
+    image: string[];
     status: 'pending' | 'completed';
-    images: string[];
+    // payments: Payment[];
 }
 
 const Profile: React.FC = () => {
@@ -38,14 +42,14 @@ const Profile: React.FC = () => {
             <div className="flex items-center mb-6">
                 {/* Profile Image or Default Logo */}
                 <img
-                    src={firstCustomer.images && firstCustomer.images.length > 0 ? firstCustomer.images[0] : defaultLogo}
+                    src={firstCustomer.image && firstCustomer.image.length > 0 ? firstCustomer.image[0] : defaultLogo}
                     alt="Profile"
                     className="rounded-full h-24 w-24 mr-4"
                 />
                 <div>
                     <h3 className="text-xl font-bold">{firstCustomer.username}</h3>
                     <p className="text-gray-600">{firstCustomer.address}</p>
-                    <p className="text-gray-600">{firstCustomer.phonenumber}</p>
+                    <p className="text-gray-600">{firstCustomer.ph_no}</p>
                 </div>
             </div>
 
@@ -71,17 +75,17 @@ const Profile: React.FC = () => {
                         <tr key={index} className="text-center">
                             <td className="border p-2">
                                 <Link to="/profile" state={customer} className="text-blue-500 hover:underline">
-                                    {customer.applicationNumber}
+                                    {customer.app_no}
                                 </Link>
                             </td>
                             <td className="border p-2">{customer.username}</td>
                             <td className="border p-2">{customer.address}</td>
-                            <td className="border p-2">{customer.phonenumber}</td>
-                            <td className="border p-2">{customer.ItemWeight}</td>
+                            <td className="border p-2">{customer.ph_no}</td>
+                            <td className="border p-2">{customer.item_weight}</td>
                             <td className="border p-2">{customer.amount}</td>
-                            <td className="border p-2">{customer.PendingAmount}</td>
-                            <td className="border p-2">{customer.StaringDate}</td>
-                            <td className="border p-2">{customer.EndingDate}</td>
+                            <td className="border p-2">{customer.pending}</td>
+                            <td className="border p-2">{customer.start_date}</td>
+                            <td className="border p-2">{customer.end_date}</td>
                             <td className="border p-2">{customer.status}</td>
                             <td className="border p-2">{customer.note}</td>
                         </tr>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { axiosInstance } from '../api/axiosConfig';
 import { PUT_URL } from '../api/endpoint';
 import axios from 'axios';
@@ -65,6 +65,8 @@ const UpdateCustomer: React.FC = () => {
     const { id } = useParams<{ id: string }>(); // Fetch id from route params
     const [loading, setLoading] = useState(true);
 
+
+
     // Fetch customer data when the component mounts
     useEffect(() => {
         const fetchCustomerData = async () => {
@@ -91,17 +93,10 @@ const UpdateCustomer: React.FC = () => {
         setFormData((prevFormData) => {
             let updatedFormData = { ...prevFormData, [name]: value };
 
-            // If current_amount is updated, adjust the pending amount accordingly
-            if (name === "current_amount") {
-                const currentAmountValue = parseFloat(value) || 0;
-                const pending = prevFormData.pending - currentAmountValue;
-
-                updatedFormData = { ...updatedFormData, pending: pending >= 0 ? pending : 0 };
-            }
-
             return updatedFormData;
         });
     };
+
 
 
 
@@ -179,6 +174,23 @@ const UpdateCustomer: React.FC = () => {
             } catch (error) {
                 console.error('Error updating customer:', error);
             }
+        }
+    };
+
+
+    const handleStatusChange = async (newStatus: 'pending' | 'completed') => {
+        try {
+            const updatedFormData = { ...formData, status: newStatus };
+
+            // Send the PUT request to update the customer's status
+            // await axios.put(`http://172.20.0.26:8000/customers/${formData.app_no}`, updatedFormData);
+
+            // If the API call is successful, update the formData state
+            setFormData(updatedFormData);
+
+            console.log('Status updated successfully');
+        } catch (error) {
+            console.error('Error updating status:', error);
         }
     };
 
@@ -331,6 +343,13 @@ const UpdateCustomer: React.FC = () => {
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
                         {errors.note && <span className='text-red-500'>{errors.note}</span>}
+                    </div>
+
+                    <div className='border-2 p-2'>
+                        <select className="border p-2 rounded" value={formData.status} onChange={(e) => handleStatusChange(e.target.value as 'pending' | 'completed')} >
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
                     </div>
 
                     {/* Image Upload */}
