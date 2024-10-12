@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Customer {
     applicationNumber: string;
@@ -17,12 +17,38 @@ interface Customer {
 }
 
 const CompletedCustomers: React.FC = () => {
-    const location = useLocation();
-    const { data: completedcustomers } = location.state as { data: Customer[] };
+    const [completedCustomers, setCompletedCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch completed customers from the API
+    useEffect(() => {
+        const fetchCompletedCustomers = async () => {
+            try {
+                const response = await axios.get('http://172.20.0.26:8000/completed_customers');
+                setCompletedCustomers(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching completed customers:', error);
+                setError('Error fetching completed customers.');
+                setLoading(false);
+            }
+        };
+
+        fetchCompletedCustomers();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Due Date Customers</h2>
+            <h2 className="text-2xl font-bold mb-4">Completed Customers</h2>
 
             <table className="min-w-full bg-white border">
                 <thead>
@@ -41,7 +67,7 @@ const CompletedCustomers: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {completedcustomers.map((customer, index) => (
+                    {completedCustomers.map((customer, index) => (
                         <tr key={index} className="text-center">
                             <td className="border p-2">{customer.applicationNumber}</td>
                             <td className="border p-2">{customer.username}</td>

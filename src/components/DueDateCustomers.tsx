@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Customer {
     applicationNumber: string;
@@ -17,8 +17,33 @@ interface Customer {
 }
 
 const DueDateCustomers: React.FC = () => {
-    const location = useLocation();
-    const { data: dueDateCustomers } = location.state as { data: Customer[] };
+    const [dueDateCustomers, setDueDateCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDueCustomers = async () => {
+            try {
+                const response = await axios.get('http://172.20.0.26:8000/due_customers');
+                setDueDateCustomers(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching due customers:', error);
+                setError('Error fetching due customers.');
+                setLoading(false);
+            }
+        };
+
+        fetchDueCustomers();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div className="p-4">

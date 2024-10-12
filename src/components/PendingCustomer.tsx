@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Customer {
     applicationNumber: string;
@@ -17,8 +17,34 @@ interface Customer {
 }
 
 const PendingCustomers: React.FC = () => {
-    const location = useLocation();
-    const { data: pendingCustomers } = location.state as { data: Customer[] };
+    const [pendingCustomers, setPendingCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch pending customers from the API
+    useEffect(() => {
+        const fetchPendingCustomers = async () => {
+            try {
+                const response = await axios.get('http://172.20.0.26:8000/pending_customers');
+                setPendingCustomers(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching pending customers:', error);
+                setError('Error fetching pending customers.');
+                setLoading(false);
+            }
+        };
+
+        fetchPendingCustomers();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div className="p-4">
