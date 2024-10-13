@@ -63,7 +63,7 @@ const UpdateCustomer: React.FC = () => {
     const [errors, setErrors] = useState<FormErrors>({});
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>(); // Fetch id from route params
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
 
 
 

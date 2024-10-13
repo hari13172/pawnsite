@@ -61,10 +61,12 @@ export default function CustomerFormWithTable() {
     localStorage.setItem('customers', JSON.stringify(newCustomers));
   };
 
-  // Handle status change
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleStatusChange = async (index: number, newStatus: 'pending' | 'completed') => {
+  const handleStatusChange = async (index: number) => {
     const customer = customers[index];
+    const selectElement = document.getElementById(`status-${index}`) as HTMLSelectElement;
+    const newStatus = selectElement.value as 'pending' | 'completed';
     const updatedCustomer = { ...customer, status: newStatus };
 
     try {
@@ -172,7 +174,7 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.amount}</td>
                 <td className="border p-2">{customer.pending}</td>
                 <td className="border p-2">{customer.start_date}</td>
-                <td className="border p-2">{customer.end_date}</td>
+                <td className="border p-2" onChange={() => handleStatusChange(index)}>{customer.end_date}</td>
                 <td className="border p-2 space-x-2">
                   <div className='flex gap-4'>
                     <button onClick={() => handleEdit(customer)} className="bg-blue-500 text-white p-2 rounded">
