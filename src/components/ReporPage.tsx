@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios for API calls
 import { FormData } from '../models/FormData';
-
 
 export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
@@ -10,18 +10,20 @@ export default function Report() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const navigate = useNavigate();
 
-
-
-    // Load customers from local storage when the component mounts
+    // Load customers from the API when the component mounts
     useEffect(() => {
-        const storedCustomers = localStorage.getItem('customers');
-        if (storedCustomers) {
-            const parsedCustomers = JSON.parse(storedCustomers);
-            setCustomers(parsedCustomers);
-            setFilteredCustomers(parsedCustomers);
-        }
-    }, []);
+        const fetchCustomers = async () => {
+            try {
+                const response = await axios.get('http://172.20.0.26:8000/customers');
+                setCustomers(response.data); // Set customers with the API response
+                setFilteredCustomers(response.data); // Initialize filtered customers with the API data
+            } catch (error) {
+                console.error('Error fetching customers from API:', error);
+            }
+        };
 
+        fetchCustomers();
+    }, []);
 
     const handleViewProfile = (phonenumber: number) => {
         const customersWithSamePhone = customers.filter(customer => customer.ph_no === phonenumber);
@@ -65,27 +67,33 @@ export default function Report() {
             "Ending Date",
             "Status",
             "Notes",
-            "image"
+            "Image"
         ];
 
-        const rows = filteredCustomers.map(customer => [
-            customer.app_no,
-            customer.username,
-            customer.address,
-            customer.ph_no,
-            customer.item_weight,
-            customer.amount,
-            customer.pending,
-            customer.start_date,
-            customer.end_date,
-            customer.status,
-            customer.note,
-            customer.image.join('|') // Joining image URLs or base64 strings with '|'
-        ]);
+        const rows = filteredCustomers.map(customer => {
+            const imageField = Array.isArray(customer.image)
+                ? customer.image.join('|') // Join if array
+                : customer.image || ''; // Use image directly if it's a string
+
+            return [
+                customer.app_no,
+                customer.username,
+                customer.address,
+                customer.ph_no,
+                customer.item_weight,
+                customer.amount,
+                customer.pending,
+                customer.start_date,
+                customer.end_date,
+                customer.status,
+                customer.note,
+                imageField
+            ];
+        });
 
         const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.map(item => `"${item}"`).join(',')) // Wrap each item with quotes
+            headers.join(','), // Add header row
+            ...rows.map(row => row.map(item => `"${item}"`).join(',')) // Add each data row
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -125,7 +133,6 @@ export default function Report() {
             <table className="min-w-full bg-white border">
                 <thead>
                     <tr>
-                        {/* Table headers */}
                         <th className="border p-2">Application Number</th>
                         <th className="border p-2">Username</th>
                         <th className="border p-2">Address</th>
@@ -167,15 +174,13 @@ export default function Report() {
                                 <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td>
                                 <td className="border p-2">{customer.note}</td>
                                 <td className="border p-2">
-                                    {customer.image && customer.image.length > 0 ? (
+                                    {customer.image && customer.image.length > 0 && (
                                         <img
-                                            src={customer.image[0]}
+                                            src={"http://172.20.0.26:8000/" + customer.image} // Use the image URL directly
                                             alt="Uploaded"
-                                            onClick={() => handleImageClick(customer.image[0])}
                                             className="h-12 w-12 object-cover rounded cursor-pointer"
+                                            onClick={() => handleImageClick("http://172.20.0.26:8000/" + customer.image)} // Handle image click
                                         />
-                                    ) : (
-                                        'No Image'
                                     )}
                                 </td>
                             </tr>
@@ -192,17 +197,32 @@ export default function Report() {
     );
 }
 
-
-
 // Modal Component for Image Preview
 const ImageModal = ({ image, onClose }: { image: string; onClose: () => void }) => {
+    const handleClickOutside = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        // Check if the clicked element is the background (modal overlay)
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl max-h-screen">
-                <img src={image} alt="Preview" className="max-w-full max-h-screen object-contain" />
-                <button onClick={onClose} className="mt-4 bg-red-500 text-white p-2 rounded">
-                    Close
+        <div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+            onClick={handleClickOutside}  // Add onClick handler to the background
+        >
+            <div className="relative bg-white p-8 rounded-lg shadow-lg max-w-3xl max-h-screen">
+                {/* Close button positioned in the top-right corner */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 px-4 rounded-full text-4xl"
+                >
+                    &times;
+                    {/* Close */}
                 </button>
+
+                {/* Image */}
+                <img src={image} alt="Preview" className="max-w-full max-h-screen object-contain" />
             </div>
         </div>
     );

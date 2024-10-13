@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 
     // Card data based on API response
     const cardData = [
-        { title: 'Total Customers', value: dashboardData.total.toString(), page: '/all-customers' },
+        { title: 'Total Customers', value: dashboardData.total.toString(), page: '/customers' },
         { title: 'Due Date Customers', value: dashboardData.due_date.toString(), page: '/due-customers' },
         { title: 'Pending Customers', value: dashboardData.pending.toString(), page: '/pending-customers' },
         { title: 'Completed Customers', value: dashboardData.completed.toString(), page: '/completed-customers' },

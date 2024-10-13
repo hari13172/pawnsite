@@ -14,7 +14,7 @@ interface FormData {
     app_no: number | ''; // Ensures a default value
     username: string;
     address: string;
-    ph_no: number | '';  // Ensures a default value
+    ph_no: string | '';  // Ensures a default value
     item_weight: number | ''; // Ensures a default value
     amount: number | ''; // Ensures a default value
     pending: number | ''; // Ensures a default value
@@ -46,7 +46,7 @@ const CustomerPage: React.FC = () => {
         app_no: 0, // Default to empty string
         username: "",
         address: "",
-        ph_no: 0, // Default to empty string
+        ph_no: "", // Default to empty string
         item_weight: 0, // Default to empty string
         amount: 0, // Default to empty string
         pending: 0, // Default to empty string
@@ -106,9 +106,18 @@ const CustomerPage: React.FC = () => {
         const phone = e.target.value;
         setPhoneNumber(phone);
 
+        if (errors.ph_no) {
+            setErrors((prevErrors) => ({ ...prevErrors, ph_no: undefined }));
+        }
+
         if (phone.length === 10) {
             fetchCustomerByPhone(phone);
         }
+
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            ph_no: phone
+        }));
     };
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -145,7 +154,6 @@ const CustomerPage: React.FC = () => {
         const phoneRegex = /^[0-9]{10}$/;
         const weightRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
         const amountRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
-        console.log(formData.ph_no)
         if (!formData.app_no) tempErrors.app_no = "Application number is required";
         if (!formData.username) tempErrors.username = "Username is required";
         if (!formData.address) tempErrors.address = "Address is required";
