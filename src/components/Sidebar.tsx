@@ -1,32 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaBars, FaTimes } from 'react-icons/fa';
 
 const Sidebar: React.FC = () => {
-    const [isOpen, setIsOpen] = useState(true);
 
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
 
     return (
         <div className="flex">
             {/* Sidebar */}
             <div
-                className={`${isOpen ? 'w-64' : 'w-16'
-                    } lg:h-screen bg-gray-800 text-white transition-all duration-300 fixed top-0 left-0 z-10 flex flex-col`}
+                className={`
+                    } w-64 lg:h-screen bg-gray-800 text-white transition-all duration-300 fixed top-0 left-0 z-10 flex flex-col`}
             >
-                {/* <div className="p-4 flex items-center justify-between">
-                    {isOpen && <div className="text-2xl font-bold">Pawmshop Admin</div>}
-                    <button onClick={toggleSidebar} className="text-2xl">
-                        {isOpen ? <FaTimes /> : <FaBars />}
-                    </button>
-                </div> */}
 
-                <ul className={`space-y-2 mt-4 p-4 ${isOpen ? 'block' : 'hidden'}`}>
+                <ul className={`space-y-2 mt-4 p-4 `}>
                     <li>
                         <NavLink
-                            to="/"
+                            to="/dashboard"
                             className={({ isActive }) =>
                                 isActive
                                     ? 'bg-gray-700 p-3 rounded-md cursor-pointer text-lg transition-colors duration-200 block'

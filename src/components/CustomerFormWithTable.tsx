@@ -5,8 +5,6 @@ import { FaRegEdit } from 'react-icons/fa';
 import { FormData } from '../models/FormData';
 import axios from 'axios';
 
-
-
 export default function CustomerFormWithTable() {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState<FormData[]>([]);
@@ -30,8 +28,6 @@ export default function CustomerFormWithTable() {
     fetchCustomers();
   }, []);
 
-
-
   // Handle search for phone number filtering
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -51,8 +47,6 @@ export default function CustomerFormWithTable() {
     navigate(`/updatecustomer/${customer.app_no}`);
   };
 
-
-
   const handleViewProfile = (phonenumber: number) => {
     const customersWithSamePhone = customers.filter(customer => customer.ph_no === phonenumber);
     navigate('/profiles', { state: { customers: customersWithSamePhone } });
@@ -67,8 +61,10 @@ export default function CustomerFormWithTable() {
     localStorage.setItem('customers', JSON.stringify(newCustomers));
   };
 
+  // Handle status change
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleStatusChange = async (index: number, newStatus: 'pending' | 'completed') => {
-    const customer = customers[index]; // Get the customer to update
+    const customer = customers[index];
     const updatedCustomer = { ...customer, status: newStatus };
 
     try {
@@ -99,7 +95,6 @@ export default function CustomerFormWithTable() {
     setSelectedImage(null); // Close the modal by resetting the selected image
   };
 
-
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Customer List</h2>
@@ -113,6 +108,27 @@ export default function CustomerFormWithTable() {
           onChange={handleSearch}
           className="border p-2 rounded"
         />
+      </div>
+
+      {/* Status Filter Dropdown */}
+      <div className="mb-4">
+        <label>Status Filter: </label>
+        <select
+          className="border p-2 rounded"
+          onChange={(e) => {
+            const statusFilter = e.target.value;
+            if (statusFilter === 'all') {
+              setFilteredCustomers(customers);
+            } else {
+              const filtered = customers.filter(customer => customer.status === statusFilter);
+              setFilteredCustomers(filtered);
+            }
+          }}
+        >
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
       </div>
 
       {/* Table to Display Customer Data */}
@@ -129,7 +145,6 @@ export default function CustomerFormWithTable() {
             <th className="border p-2">Pending Amount</th>
             <th className="border p-2">Starting Date</th>
             <th className="border p-2">Ending Date</th>
-            <th className="border p-2">Status</th>
             <th className="border p-2">Actions</th>
             <th className="border p-2">Notes</th>
             <th className="border p-2">Image</th>
@@ -158,13 +173,6 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">{customer.pending}</td>
                 <td className="border p-2">{customer.start_date}</td>
                 <td className="border p-2">{customer.end_date}</td>
-                {/* <td className="border p-2">{customer.status === 'pending' ? 'Pending' : 'Completed'}</td> */}
-                <td className='border-2 p-2'>
-                  <select className="border p-2 rounded" value={customer.status} onChange={(e) => handleStatusChange(index, e.target.value as 'pending' | 'completed')} >
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </td>
                 <td className="border p-2 space-x-2">
                   <div className='flex gap-4'>
                     <button onClick={() => handleEdit(customer)} className="bg-blue-500 text-white p-2 rounded">
@@ -173,9 +181,6 @@ export default function CustomerFormWithTable() {
                     <button onClick={() => handleDelete(index)} className="bg-red-500 text-white p-2 rounded">
                       <RiDeleteBin5Fill />
                     </button>
-                    {/* <button onClick={() => handleStatusChange(index)} className="bg-green-500 text-white p-2 rounded">
-                      {customer.status === 'pending' ? <IoCheckmarkDoneSharp /> : <MdPendingActions />}
-                    </button> */}
                   </div>
                 </td>
                 <td className="border p-2">{customer.note}</td>
@@ -206,7 +211,6 @@ export default function CustomerFormWithTable() {
 }
 
 
-
 // Modal Component for Image Preview
 const ImageModal = ({ image, onClose }: { image: string; onClose: () => void }) => {
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -228,7 +232,6 @@ const ImageModal = ({ image, onClose }: { image: string; onClose: () => void }) 
           className="absolute top-2 right-2 bg-red-500 text-white p-2 px-4 rounded-full text-4xl"
         >
           &times;
-          {/* Close */}
         </button>
 
         {/* Image */}

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../api/axiosConfig';
 import { FORM_URL } from '../api/endpoint';
 
@@ -62,7 +62,7 @@ const CustomerPage: React.FC = () => {
     const [errors, setErrors] = useState<FormErrors>({});
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const navigate = useNavigate();
-    const location = useLocation();
+    // const location = useLocation();
 
     const handleReset = () => {
         setFormData({
@@ -151,7 +151,6 @@ const CustomerPage: React.FC = () => {
 
     const validate = (): boolean => {
         let tempErrors: FormErrors = {};
-        const phoneRegex = /^[0-9]{10}$/;
         const weightRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
         const amountRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
         if (!formData.app_no) tempErrors.app_no = "Application number is required";
