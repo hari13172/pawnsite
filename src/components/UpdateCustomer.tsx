@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { axiosInstance } from '../api/axiosConfig';
-import { PUT_URL } from '../api/endpoint';
+import { PUT_URL, SERVER_IP } from '../api/endpoint';
 import axios from 'axios';
 
 // Types for data
@@ -71,7 +71,7 @@ const UpdateCustomer: React.FC = () => {
     useEffect(() => {
         const fetchCustomerData = async () => {
             try {
-                const response = await axios.get(`http://172.20.0.26:8000/customers/${id}`);
+                const response = await axios.get(`${SERVER_IP}/api/customers/${id}`);
                 const customerData = response.data;
                 setFormData({
                     ...customerData,
@@ -103,7 +103,6 @@ const UpdateCustomer: React.FC = () => {
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-
             // Ensure we are storing an array of file objects
             setFormData({
                 ...formData,
@@ -183,7 +182,7 @@ const UpdateCustomer: React.FC = () => {
             const updatedFormData = { ...formData, status: newStatus };
 
             // Send the PUT request to update the customer's status
-            // await axios.put(`http://172.20.0.26:8000/customers/${formData.app_no}`, updatedFormData);
+            // await axios.put(`http://172.20.0.26/api:8000/customers/${formData.app_no}`, updatedFormData);
 
             // If the API call is successful, update the formData state
             setFormData(updatedFormData);

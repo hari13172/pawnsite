@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { SERVER_IP } from '../api/endpoint';
 
 interface Customer {
     applicationNumber: string;
@@ -24,7 +25,7 @@ const DueDateCustomers: React.FC = () => {
     useEffect(() => {
         const fetchDueCustomers = async () => {
             try {
-                const response = await axios.get('http://172.20.0.26:8000/due_customers');
+                const response = await axios.get(`${SERVER_IP}/api/due_customers`);
                 setDueDateCustomers(response.data);
                 setLoading(false);
             } catch (error) {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../api/axiosConfig';
-import { FORM_URL } from '../api/endpoint';
+import { FORM_URL, SERVER_IP } from '../api/endpoint';
 
 // Types for data
 interface Payment {
@@ -86,7 +86,7 @@ const CustomerPage: React.FC = () => {
 
     const fetchCustomerByPhone = async (phone: string) => {
         try {
-            const response = await axiosInstance.get(`http://172.20.0.26:8000/filter/${phone}`);
+            const response = await axiosInstance.get(`${SERVER_IP}/api/filter/${phone}`);
             const customerData = response.data[0];
             console.log(customerData)
             if (customerData) {
@@ -304,7 +304,7 @@ const CustomerPage: React.FC = () => {
                         {errors.pending && <span className='text-red-500'>{errors.pending}</span>}
                     </div>
 
-                    <div>
+                    {/* <div>
                         <label className='block'>Current Amount</label>
                         <input
                             placeholder='0'
@@ -315,7 +315,7 @@ const CustomerPage: React.FC = () => {
                             className='w-full p-2 border border-gray-300 rounded mt-1'
                         />
                         {errors.current_amount && <span className='text-red-500'>{errors.current_amount}</span>}
-                    </div>
+                    </div> */}
 
                     <div>
                         <label className='block'>Starting Date</label>

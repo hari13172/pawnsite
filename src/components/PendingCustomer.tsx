@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { SERVER_IP } from '../api/endpoint';
 
 interface Customer {
-    applicationNumber: string;
+    app_no: string;
     username: string;
     address: string;
-    phonenumber: string;
+    ph_no: string;
     ItemWeight: string;
     amount: string;
     PendingAmount: string;
@@ -25,7 +26,7 @@ const PendingCustomers: React.FC = () => {
     useEffect(() => {
         const fetchPendingCustomers = async () => {
             try {
-                const response = await axios.get('http://172.20.0.26:8000/pending_customers');
+                const response = await axios.get(`${SERVER_IP}/api/pending_customers`);
                 setPendingCustomers(response.data);
                 setLoading(false);
             } catch (error) {
@@ -69,10 +70,10 @@ const PendingCustomers: React.FC = () => {
                 <tbody>
                     {pendingCustomers.map((customer, index) => (
                         <tr key={index} className="text-center">
-                            <td className="border p-2">{customer.applicationNumber}</td>
+                            <td className="border p-2">{customer.app_no}</td>
                             <td className="border p-2">{customer.username}</td>
                             <td className="border p-2">{customer.address}</td>
-                            <td className="border p-2">{customer.phonenumber}</td>
+                            <td className="border p-2">{customer.ph_no}</td>
                             <td className="border p-2">{customer.ItemWeight}</td>
                             <td className="border p-2">{customer.amount}</td>
                             <td className="border p-2">{customer.PendingAmount}</td>

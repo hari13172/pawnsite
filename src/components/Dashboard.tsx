@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Card from './Card';
+import { SERVER_IP } from '../api/endpoint';
 
 // Types for the API response
 interface DashboardData {
@@ -24,7 +25,7 @@ const parseDashboardData = (response: string): DashboardData | null => {
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [dashboardData, setDashboardData] = useState<DashboardData>();
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,16 +33,17 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await axios.get('http://172.20.0.26:8000/dashboard');
+                const response = await axios.get(`${SERVER_IP}/api/dashboard`);
 
                 // Log raw API response to ensure structure is correct
                 console.log('Raw API Response:', response.data);
 
                 // Parse the string response using the parseDashboardData function
                 const parsedData = parseDashboardData(response.data);
+                console.log('Raw API Response:', parsedData);
 
-                if (parsedData) {
-                    setDashboardData(parsedData);
+                if (response.data) {
+                    setDashboardData(response.data);
                 } else {
                     setError('Failed to parse dashboard data');
                 }

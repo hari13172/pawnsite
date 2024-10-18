@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
                     {customers.map((customer, index) => (
                         <tr key={index} className="text-center">
                             <td className="border p-2">
-                                <Link to="/profile" state={customer} className="text-blue-500 hover:underline">
+                                <Link to={`/customers/${customer.app_no}`} state={customer} className="text-blue-500 hover:underline">
                                     {customer.app_no}
                                 </Link>
                             </td>

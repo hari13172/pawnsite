@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FormData } from '../models/FormData';
+import { SERVER_IP } from '../api/endpoint';
 
 
 const ProfilePage: React.FC = () => {
@@ -14,7 +15,7 @@ const ProfilePage: React.FC = () => {
     useEffect(() => {
         const fetchCustomerData = async () => {
             try {
-                const response = await axios.get(`http://172.20.0.26:8000/customers/${id}`);
+                const response = await axios.get(`${SERVER_IP}/api/customers/${id}`);
                 setCustomerData(response.data);
                 setPendingAmount(response.data.PendingAmount);
             } catch (error) {

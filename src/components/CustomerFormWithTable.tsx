@@ -4,6 +4,8 @@ import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaRegEdit } from 'react-icons/fa';
 import { FormData } from '../models/FormData';
 import axios from 'axios';
+import { AiOutlineArrowUp, AiOutlineArrowDown } from 'react-icons/ai';
+import { SERVER_IP } from '../api/endpoint';
 
 export default function CustomerFormWithTable() {
   const navigate = useNavigate();
@@ -11,12 +13,12 @@ export default function CustomerFormWithTable() {
   const [filteredCustomers, setFilteredCustomers] = useState<FormData[]>([]);
   const [searchPhone, setSearchPhone] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
+  const [sortOrder, setSortOrder] = useState<{ field: string; order: 'asc' | 'desc' | null }>({ field: '', order: null });
   // Fetch customers from the API when the component mounts
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await axios.get('http://172.20.0.26:8000/customers'); // Make a GET request to your API
+        const response = await axios.get(`${SERVER_IP}/api/customers`); // Make a GET request to your API
         const fetchedCustomers = response.data;
         setCustomers(fetchedCustomers);
         setFilteredCustomers(fetchedCustomers);
@@ -71,7 +73,7 @@ export default function CustomerFormWithTable() {
 
     try {
       // Send the PUT request to update the customer's status
-      await axios.put(`http://172.20.0.26:8000/customers/${customer.app_no}`, updatedCustomer);
+      await axios.put(`${SERVER_IP}/api/customers/${customer.app_no}`, updatedCustomer);
 
       // If the API call is successful, update the state
       const updatedCustomers = customers.map((cust, i) => {
@@ -96,6 +98,41 @@ export default function CustomerFormWithTable() {
   const closeModal = () => {
     setSelectedImage(null); // Close the modal by resetting the selected image
   };
+
+  // Handle sorting
+  const handleSort = (field: keyof FormData) => {
+    let sortedCustomers = [...filteredCustomers];
+    const order = sortOrder.field === field && sortOrder.order === 'asc' ? 'desc' : 'asc';
+
+    sortedCustomers.sort((a, b) => {
+      if (a[field] < b[field]) return order === 'asc' ? -1 : 1;
+      if (a[field] > b[field]) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setSortOrder({ field, order });
+    setFilteredCustomers(sortedCustomers);
+  };
+
+  //arrow icon
+  const getArrowIcon = (field: string) => {
+    if (sortOrder.field === field) {
+      return sortOrder.order === 'asc' ? <AiOutlineArrowUp /> : <AiOutlineArrowDown />;
+    }
+    return null;
+  };
+
+  // Count occurrences of phone numbers
+  const countPhoneOccurrences = (customers: FormData[]) => {
+    const phoneCountMap: { [key: string]: number } = {};
+    customers.forEach(customer => {
+      phoneCountMap[customer.ph_no] = (phoneCountMap[customer.ph_no] || 0) + 1;
+    });
+    return phoneCountMap;
+  };
+
+  // Get the phone number occurrences count
+  const phoneOccurrences = countPhoneOccurrences(filteredCustomers);
 
   return (
     <div className="p-4">
@@ -138,10 +175,23 @@ export default function CustomerFormWithTable() {
         <thead>
           <tr>
             {/* Table headers */}
-            <th className="border p-2">Application Number</th>
-            <th className="border p-2">Username</th>
+            {['app_no', 'username', 'ph_no'].map((field, idx) => (
+              <th
+                key={idx}
+                className="border p-2 group relative cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSort(field as keyof FormData)}
+              >
+                <div className="flex items-center justify-between">
+                  {field.replace('_', ' ').toUpperCase()}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out">
+                    {getArrowIcon(field)}
+                  </div>
+                </div>
+              </th>
+            ))}
+            <th className="border p-2">Same Customer</th>
             <th className="border p-2">Address</th>
-            <th className="border p-2">Phone Number</th>
+            {/* <th className="border p-2">Phone Number</th> */}
             <th className="border p-2">Item Weight</th>
             <th className="border p-2">Amount</th>
             <th className="border p-2">Pending Amount</th>
@@ -154,11 +204,17 @@ export default function CustomerFormWithTable() {
         </thead>
         <tbody>
           {filteredCustomers.length > 0 ? (
-            filteredCustomers.slice().reverse().map((customer, index) => (
+            filteredCustomers.slice().map((customer, index) => (
               <tr key={index} className="text-center">
                 <td className="border p-2">
                   <Link to={`/customers/${customer.app_no}`} state={customer} className="text-blue-500 hover:underline">{customer.app_no}</Link>
                 </td>
+
+                {/* <td className="border p-2">
+                  <Link to={`/customers/${customer.app_no}`} state={customer} className="text-blue-500 hover:underline">
+                    {phoneOccurrences[customer.ph_no] > 1 ? `${phoneOccurrences[customer.ph_no]} ` : ''}{customer.app_no}
+                  </Link>
+                </td> */}
                 <td className="border p-2">
                   <button
                     onClick={() => handleViewProfile(customer.ph_no)}
@@ -168,8 +224,9 @@ export default function CustomerFormWithTable() {
                   </button>
                 </td>
                 {/* Other customer details */}
-                <td className="border p-2">{customer.address}</td>
                 <td className="border p-2">{customer.ph_no}</td>
+                <td className="border p-2">{phoneOccurrences[customer.ph_no]}</td>
+                <td className="border p-2">{customer.address}</td>
                 <td className="border p-2">{customer.item_weight}</td>
                 <td className="border p-2">{customer.amount}</td>
                 <td className="border p-2">{customer.pending}</td>
@@ -190,10 +247,10 @@ export default function CustomerFormWithTable() {
                 <td className="border p-2">
                   {customer.image && customer.image.length > 0 && (
                     <img
-                      src={"http://172.20.0.26:8000/" + customer.image} // Use the image URL directly
+                      src={`${SERVER_IP}` + customer.image} // Use the image URL directly
                       alt="Uploaded"
                       className="h-12 w-12 object-cover rounded cursor-pointer"
-                      onClick={() => handleImageClick("http://172.20.0.26:8000/" + customer.image)} // Handle image click
+                      onClick={() => handleImageClick(`${SERVER_IP}` + customer.image)} // Handle image click
                     />
                   )}
                 </td>

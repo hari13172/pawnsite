@@ -1,4 +1,6 @@
-export const FORM_URL = "http://172.20.0.26:8000/add_customers"
-export const TABLE_URL = "http://172.20.0.26:8000/customers"
-export const PUT_URL = "http://172.20.0.26:8000/customers/"
-export const DASH_URL = "http://172.20.0.26:8000/dashboard"
+export const SERVER_IP = "http://172.20.0.14:8000"
+
+export const FORM_URL =`${SERVER_IP}/api/add_customers`
+export const TABLE_URL =`${SERVER_IP}/api/customers`
+export const PUT_URL =`${SERVER_IP}/api/customers/`
+export const DASH_URL =`${SERVER_IP}/api/dashboard`

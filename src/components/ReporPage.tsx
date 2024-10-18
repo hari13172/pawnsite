@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios for API calls
 import { FormData } from '../models/FormData';
+import { SERVER_IP } from '../api/endpoint';
 
 export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
@@ -14,7 +15,7 @@ export default function Report() {
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
-                const response = await axios.get('http://172.20.0.26:8000/customers');
+                const response = await axios.get(`${SERVER_IP}/api/customers`);
                 setCustomers(response.data); // Set customers with the API response
                 setFilteredCustomers(response.data); // Initialize filtered customers with the API data
             } catch (error) {
@@ -176,10 +177,10 @@ export default function Report() {
                                 <td className="border p-2">
                                     {customer.image && customer.image.length > 0 && (
                                         <img
-                                            src={"http://172.20.0.26:8000/" + customer.image} // Use the image URL directly
+                                            src={`${SERVER_IP}` + customer.image} // Use the image URL directly
                                             alt="Uploaded"
                                             className="h-12 w-12 object-cover rounded cursor-pointer"
-                                            onClick={() => handleImageClick("http://172.20.0.26:8000/" + customer.image)} // Handle image click
+                                            onClick={() => handleImageClick(`${SERVER_IP}` + customer.image)} // Handle image click
                                         />
                                     )}
                                 </td>
