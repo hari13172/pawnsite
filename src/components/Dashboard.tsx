@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Card from './Card';
 import { SERVER_IP } from '../api/endpoint';
+// @ts-ignore
+import Cookies from 'js-cookie';
+import { accessToken } from '../api/axiosConfig';
+
 
 // Types for the API response
 interface DashboardData {
@@ -33,7 +37,22 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/dashboard`);
+
+
+
+                const response: any = await axios.get(`${SERVER_IP}/api/dashboard`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                })
 
                 // Log raw API response to ensure structure is correct
                 console.log('Raw API Response:', response.data);

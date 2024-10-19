@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { axiosInstance } from '../api/axiosConfig';
+import { accessToken, axiosInstance } from '../api/axiosConfig';
 import { PUT_URL, SERVER_IP } from '../api/endpoint';
 import axios from 'axios';
 
@@ -71,7 +71,19 @@ const UpdateCustomer: React.FC = () => {
     useEffect(() => {
         const fetchCustomerData = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/customers/${id}`);
+                const response: any = await axios.get(`${SERVER_IP}/api/customers/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 const customerData = response.data;
                 setFormData({
                     ...customerData,
@@ -162,10 +174,19 @@ const UpdateCustomer: React.FC = () => {
                 }
 
                 // Make the PUT request using axiosInstance
-                const response = await axiosInstance.put(PUT_URL + id, formDataToSend, {
+                const response: any = await axiosInstance.put(PUT_URL + id, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
                     },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
                 });
 
                 console.log("Customer updated successfully", response.data);

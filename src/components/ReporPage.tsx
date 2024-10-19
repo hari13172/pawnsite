@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios for API calls
 import { FormData } from '../models/FormData';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
 
 export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
@@ -15,7 +16,19 @@ export default function Report() {
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/customers`);
+                const response: any = await axios.get(`${SERVER_IP}/api/customers`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 setCustomers(response.data); // Set customers with the API response
                 setFilteredCustomers(response.data); // Initialize filtered customers with the API data
             } catch (error) {

@@ -6,6 +6,7 @@ import { FormData } from '../models/FormData';
 import axios from 'axios';
 import { AiOutlineArrowUp, AiOutlineArrowDown } from 'react-icons/ai';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
 
 export default function CustomerFormWithTable() {
   const navigate = useNavigate();
@@ -18,7 +19,19 @@ export default function CustomerFormWithTable() {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await axios.get(`${SERVER_IP}/api/customers`); // Make a GET request to your API
+        const response: any = await axios.get(`${SERVER_IP}/api/customers`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'WWW-Authenticate': 'Bearer',
+          },
+        }).catch((err) => {
+          if (err.status === 401) {
+            navigate("/")
+          }
+          else {
+            console.log(err, "errrorrrrr")
+          }
+        }); // Make a GET request to your API
         const fetchedCustomers = response.data;
         setCustomers(fetchedCustomers);
         setFilteredCustomers(fetchedCustomers);
@@ -73,7 +86,19 @@ export default function CustomerFormWithTable() {
 
     try {
       // Send the PUT request to update the customer's status
-      await axios.put(`${SERVER_IP}/api/customers/${customer.app_no}`, updatedCustomer);
+      await axios.put(`${SERVER_IP}/api/customers/${customer.app_no}`, updatedCustomer, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'WWW-Authenticate': 'Bearer',
+        },
+      }).catch((err) => {
+        if (err.status === 401) {
+          navigate("/")
+        }
+        else {
+          console.log(err, "errrorrrrr")
+        }
+      });
 
       // If the API call is successful, update the state
       const updatedCustomers = customers.map((cust, i) => {

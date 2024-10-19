@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { axiosInstance } from '../api/axiosConfig';
+import { accessToken, axiosInstance } from '../api/axiosConfig';
 import { FORM_URL, SERVER_IP } from '../api/endpoint';
 
 // Types for data
@@ -86,7 +86,19 @@ const CustomerPage: React.FC = () => {
 
     const fetchCustomerByPhone = async (phone: string) => {
         try {
-            const response = await axiosInstance.get(`${SERVER_IP}/api/filter/${phone}`);
+            const response: any = await axiosInstance.get(`${SERVER_IP}/api/filter/${phone}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'WWW-Authenticate': 'Bearer',
+                },
+            }).catch((err) => {
+                if (err.status === 401) {
+                    navigate("/")
+                }
+                else {
+                    console.log(err, "errrorrrrr")
+                }
+            });
             const customerData = response.data[0];
             console.log(customerData)
             if (customerData) {
@@ -197,10 +209,19 @@ const CustomerPage: React.FC = () => {
                 }
 
                 // Make the POST request using axiosInstance
-                const response = await axiosInstance.post(FORM_URL, formDataToSend, {
+                const response: any = await axiosInstance.post(FORM_URL, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
                     },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
                 });
 
                 console.log("Customer added successfully", response.data);

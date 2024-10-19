@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 interface Customer {
     app_no: string;
@@ -21,12 +23,25 @@ const PendingCustomers: React.FC = () => {
     const [pendingCustomers, setPendingCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate()
 
     // Fetch pending customers from the API
     useEffect(() => {
         const fetchPendingCustomers = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/pending_customers`);
+                const response: any = await axios.get(`${SERVER_IP}/api/pending_customers`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 setPendingCustomers(response.data);
                 setLoading(false);
             } catch (error) {

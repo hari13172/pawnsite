@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 interface Customer {
     applicationNumber: string;
@@ -21,11 +23,24 @@ const DueDateCustomers: React.FC = () => {
     const [dueDateCustomers, setDueDateCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchDueCustomers = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/due_customers`);
+                const response: any = await axios.get(`${SERVER_IP}/api/due_customers`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 setDueDateCustomers(response.data);
                 setLoading(false);
             } catch (error) {

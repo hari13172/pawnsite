@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FormData } from '../models/FormData';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
 
 
 const ProfilePage: React.FC = () => {
@@ -10,12 +11,24 @@ const ProfilePage: React.FC = () => {
     const [customerData, setCustomerData] = useState<FormData | null>(null);
     const [pendingAmount, setPendingAmount] = useState<number>(0);
     const [loading, setLoading] = useState(true);
-
+    const navigate = useNavigate()
     // Fetch customer data when the component mounts
     useEffect(() => {
         const fetchCustomerData = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/customers/${id}`);
+                const response: any = await axios.get(`${SERVER_IP}/api/customers/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 setCustomerData(response.data);
                 setPendingAmount(response.data.PendingAmount);
             } catch (error) {

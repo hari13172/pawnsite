@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { SERVER_IP } from '../api/endpoint';
+import { accessToken } from '../api/axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 interface Customer {
     applicationNumber: string;
@@ -21,12 +23,25 @@ const CompletedCustomers: React.FC = () => {
     const [completedCustomers, setCompletedCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate()
 
     // Fetch completed customers from the API
     useEffect(() => {
         const fetchCompletedCustomers = async () => {
             try {
-                const response = await axios.get(`${SERVER_IP}/api/completed_customers`);
+                const response: any = await axios.get(`${SERVER_IP}/api/completed_customers`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'WWW-Authenticate': 'Bearer',
+                    },
+                }).catch((err) => {
+                    if (err.status === 401) {
+                        navigate("/")
+                    }
+                    else {
+                        console.log(err, "errrorrrrr")
+                    }
+                });
                 setCompletedCustomers(response.data);
                 setLoading(false);
             } catch (error) {
