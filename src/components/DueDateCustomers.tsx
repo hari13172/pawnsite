@@ -5,15 +5,15 @@ import { accessToken } from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
 interface Customer {
-    applicationNumber: string;
+    app_no: string;
     username: string;
     address: string;
-    phonenumber: string;
-    ItemWeight: string;
+    ph_no: string;
+    item_weight: string;
     amount: string;
-    PendingAmount: string;
-    StaringDate: string;
-    EndingDate: string;
+    pending: string;
+    start_date: string;
+    end_date: string;
     note: string;
     status: 'pending' | 'completed';
     images: string[];
@@ -84,15 +84,15 @@ const DueDateCustomers: React.FC = () => {
                 <tbody>
                     {dueDateCustomers.map((customer, index) => (
                         <tr key={index} className="text-center">
-                            <td className="border p-2">{customer.applicationNumber}</td>
+                            <td className="border p-2">{customer.app_no}</td>
                             <td className="border p-2">{customer.username}</td>
                             <td className="border p-2">{customer.address}</td>
-                            <td className="border p-2">{customer.phonenumber}</td>
-                            <td className="border p-2">{customer.ItemWeight}</td>
+                            <td className="border p-2">{customer.ph_no}</td>
+                            <td className="border p-2">{customer.item_weight}</td>
                             <td className="border p-2">{customer.amount}</td>
-                            <td className="border p-2">{customer.PendingAmount}</td>
-                            <td className="border p-2">{customer.StaringDate}</td>
-                            <td className="border p-2">{customer.EndingDate}</td>
+                            <td className="border p-2">{customer.pending}</td>
+                            <td className="border p-2">{customer.start_date}</td>
+                            <td className="border p-2">{customer.end_date}</td>
                             <td className="border p-2">{customer.status}</td>
                             <td className="border p-2">{customer.note}</td>
                         </tr>
