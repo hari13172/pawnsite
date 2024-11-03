@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // @ts-ignore
-import Cookies from 'js-cookie'; // Import js-cookie library
+import Cookies from 'js-cookie';
 import { SERVER_IP } from '../api/endpoint';
-
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -22,23 +21,28 @@ const LoginPage: React.FC = () => {
             // Make a POST request to the API
             const response = await axios.post(
                 `${SERVER_IP}/api/verify-otp`,
-                payload
+                payload,
+                { withCredentials: true }
             );
 
             if (response.status === 200) {
                 const { access_token } = response.data;
 
                 // Store the access token in cookies
-                Cookies.set('access_token', access_token, { expires: 1 }); // Expires in 1 day
+                Cookies.set('access_token', access_token, {
+                    expires: 1,  // Expires in 1 day
+                    secure: true,
+                    sameSite: 'None',
+                });
 
-                setError(null); // Clear any previous errors
-                navigate('/dashboard'); // Navigate to the dashboard on success
+                setError(null);
+                navigate('/dashboard');
             } else {
-                setError('Invalid username or OTP'); // Handle unexpected status codes
+                setError('Invalid username or OTP');
             }
         } catch (err) {
             console.error('Login error:', err);
-            setError('Invalid username or OTP'); // Handle errors
+            setError('Invalid username or OTP');
         }
     };
 

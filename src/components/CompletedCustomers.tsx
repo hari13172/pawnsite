@@ -30,8 +30,9 @@ const CompletedCustomers: React.FC = () => {
         const fetchCompletedCustomers = async () => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/completed_customers`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {

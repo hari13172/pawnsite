@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios for API calls
 import { FormData } from '../models/FormData';
 import { SERVER_IP } from '../api/endpoint';
+// @ts-ignore
+import Cookies from 'js-cookie';
 import { accessToken } from '../api/axiosConfig';
 
 export default function Report() {
@@ -17,8 +19,9 @@ export default function Report() {
         const fetchCustomers = async () => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/customers`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {
@@ -35,8 +38,8 @@ export default function Report() {
                 console.error('Error fetching customers from API:', error);
             }
         };
-
-        fetchCustomers();
+            // Fetch data immediately if token exists
+            fetchCustomers();
     }, []);
 
     const handleViewProfile = (phonenumber: number) => {

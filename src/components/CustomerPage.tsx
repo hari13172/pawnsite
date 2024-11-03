@@ -88,7 +88,7 @@ const CustomerPage: React.FC = () => {
         try {
             const response: any = await axiosInstance.get(`${SERVER_IP}/api/filter/${phone}`, {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${accessToken()}`,
                     'WWW-Authenticate': 'Bearer',
                 },
             }).catch((err) => {
@@ -212,7 +212,7 @@ const CustomerPage: React.FC = () => {
                 const response: any = await axiosInstance.post(FORM_URL, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {

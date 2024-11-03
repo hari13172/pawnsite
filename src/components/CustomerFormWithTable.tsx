@@ -20,8 +20,9 @@ export default function CustomerFormWithTable() {
     const fetchCustomers = async () => {
       try {
         const response: any = await axios.get(`${SERVER_IP}/api/customers`, {
+          withCredentials: true,
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken()}`,
             'WWW-Authenticate': 'Bearer',
           },
         }).catch((err) => {
@@ -88,7 +89,7 @@ export default function CustomerFormWithTable() {
       // Send the PUT request to update the customer's status
       await axios.put(`${SERVER_IP}/api/customers/${customer.app_no}`, updatedCustomer, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken()}`,
           'WWW-Authenticate': 'Bearer',
         },
       }).catch((err) => {

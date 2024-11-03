@@ -1,4 +1,4 @@
-export const SERVER_IP = "http://172.20.0.14:8000"
+export const SERVER_IP = "https://gold.youngstorage.site"
 
 export const FORM_URL =`${SERVER_IP}/api/add_customers`
 export const TABLE_URL =`${SERVER_IP}/api/customers`
