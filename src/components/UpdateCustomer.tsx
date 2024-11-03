@@ -72,8 +72,9 @@ const UpdateCustomer: React.FC = () => {
         const fetchCustomerData = async () => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/customers/${id}`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {
@@ -177,7 +178,7 @@ const UpdateCustomer: React.FC = () => {
                 const response: any = await axiosInstance.put(PUT_URL + id, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {

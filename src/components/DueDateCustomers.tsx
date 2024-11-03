@@ -29,8 +29,9 @@ const DueDateCustomers: React.FC = () => {
         const fetchDueCustomers = async () => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/due_customers`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {

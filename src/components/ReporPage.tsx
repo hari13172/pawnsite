@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios for API calls
 import { FormData } from '../models/FormData';
 import { SERVER_IP } from '../api/endpoint';
-import { accessToken } from '../api/axiosConfig';
+// @ts-ignore
+import Cookies from 'js-cookie';
 
 export default function Report() {
     const [customers, setCustomers] = useState<FormData[]>([]);
@@ -14,11 +15,12 @@ export default function Report() {
 
     // Load customers from the API when the component mounts
     useEffect(() => {
-        const fetchCustomers = async () => {
+        const fetchCustomers = async (token:String) => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/customers`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${token}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {
@@ -36,7 +38,17 @@ export default function Report() {
             }
         };
 
-        fetchCustomers();
+        const token:String = Cookies.get('access_token');
+
+        if (token) {
+            // Fetch data immediately if token exists
+            fetchCustomers(token);
+        } else {
+            // Redirect to login after a short delay if token is not found
+            setTimeout(() => {
+                navigate('/');
+            }, 500); // Adjust delay as needed
+        }
     }, []);
 
     const handleViewProfile = (phonenumber: number) => {

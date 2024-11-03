@@ -7,8 +7,6 @@ import { SERVER_IP } from '../api/endpoint';
 import Cookies from 'js-cookie';
 import { accessToken } from '../api/axiosConfig';
 
-
-// Types for the API response
 interface DashboardData {
     total: number;
     due_date: number;
@@ -16,74 +14,64 @@ interface DashboardData {
     completed: number;
 }
 
-// Function to parse API response
-const parseDashboardData = (response: string): DashboardData | null => {
-    try {
-        const parsedData: DashboardData = JSON.parse(response);
-        return parsedData;
-    } catch (error) {
-        console.error("Error parsing dashboard data:", error);
-        return null;
-    }
+const parseDashboardData = (response: any): DashboardData => {
+    return {
+        total: response?.total || 0,
+        due_date: response?.due_date || 0,
+        pending: response?.pending || 0,
+        completed: response?.completed || 0,
+    };
 };
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [dashboardData, setDashboardData] = useState<DashboardData>();
+    const [dashboardData, setDashboardData] = useState<DashboardData>({
+        total: 0,
+        due_date: 0,
+        pending: 0,
+        completed: 0,
+    });
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch dashboard data from the API
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
+    const fetchDashboardData = async () => {
+        try {
+            const response = await axios.get(`${SERVER_IP}/api/dashboard`, {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${accessToken()}`,
+                    'WWW-Authenticate': 'Bearer',
+                },
+            });
 
+            console.log('Raw API Response:', response.data);
+            const parsedData = parseDashboardData(response.data);
 
-
-                const response: any = await axios.get(`${SERVER_IP}/api/dashboard`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'WWW-Authenticate': 'Bearer',
-                    },
-                }).catch((err) => {
-                    if (err.status === 401) {
-                        navigate("/")
-                    }
-                    else {
-                        console.log(err, "errrorrrrr")
-                    }
-                })
-
-                // Log raw API response to ensure structure is correct
-                console.log('Raw API Response:', response.data);
-
-                // Parse the string response using the parseDashboardData function
-                const parsedData = parseDashboardData(response.data);
-                console.log('Raw API Response:', parsedData);
-
-                if (response.data) {
-                    setDashboardData(response.data);
-                } else {
-                    setError('Failed to parse dashboard data');
-                }
-
-                setLoading(false);
-            } catch (error) {
+            setDashboardData(parsedData);
+            setError(null);
+            setLoading(false);
+        } catch (error: any) {
+            if (error.response && error.response.status === 401) {
+                setError("Unauthorized - redirecting to login.");
+                Cookies.remove('access_token');
+                navigate('/');
+            } else {
                 console.error('Error fetching dashboard data:', error);
                 setError('Error fetching dashboard data');
-                setLoading(false);
             }
-        };
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchDashboardData();
-    }, []);
+    }, []); // Run only on initial render
 
-    // Handle card click and navigation
     const handleCardClick = (page: string) => {
         navigate(page);
     };
 
-    // Check if data is loading or there's an error
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -92,12 +80,6 @@ const Dashboard: React.FC = () => {
         return <div>{error}</div>;
     }
 
-    // Ensure dashboardData is not null
-    if (!dashboardData) {
-        return <div>Error: Could not fetch data from the server.</div>;
-    }
-
-    // Card data based on API response
     const cardData = [
         { title: 'Total Customers', value: dashboardData.total.toString(), page: '/customers' },
         { title: 'Due Date Customers', value: dashboardData.due_date.toString(), page: '/due-customers' },

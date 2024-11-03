@@ -30,8 +30,9 @@ const PendingCustomers: React.FC = () => {
         const fetchPendingCustomers = async () => {
             try {
                 const response: any = await axios.get(`${SERVER_IP}/api/pending_customers`, {
+                    withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken()}`,
                         'WWW-Authenticate': 'Bearer',
                     },
                 }).catch((err) => {
