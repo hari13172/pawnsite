@@ -7,7 +7,7 @@ import { SERVER_IP } from '../api/endpoint';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const [username, setUsername] = useState<string>('senthilnanda2001@gmail.com');
+    const [username, setUsername] = useState<string>('');
     const [otp, setOtp] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
 
